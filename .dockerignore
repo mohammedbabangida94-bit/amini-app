@@ -1,15 +1,13 @@
-const express = require('express');
+# This is a safe and recommended .dockerignore file
 
-// Constants
-const PORT = 3000;
-const HOST = '0.0.0.0'; // This is important for Docker
+# Ignore Node.js dependency folder
+node_modules
 
-const app = express();
+# Ignore version control folder
+.git
 
-app.get('/', (req, res) => {
-  res.send('<h1>Hello from your Amini App!</h1><p>It is currently running inside a Docker container.</p>');
-});
+# Ignore environment variables file
+.env
 
-app.listen(PORT, HOST, () => {
-  console.log(`Amini app is running on http://${HOST}:${PORT}`);
-});
+# Ignore log files
+*.log

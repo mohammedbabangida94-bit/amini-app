@@ -14,4 +14,4 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app .
 USER amini
 EXPOSE 3000
-CMD [ "node", "server.js" ]
+CMD [ "node", "amini-docker-project/server.js" ]
