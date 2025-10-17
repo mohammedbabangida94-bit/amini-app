@@ -72,15 +72,12 @@ const authMiddleware = (req, res, next) => {
 
 // --- Public Routes ---
 
-// ADD THIS ROUTE FOR THE HOMEPAGE
+// Homepage route
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.send('Welcome to the Amini App API!');
 });
 
-// Note: The logic for register/login is still missing.
-// This is where you would hash the password and save the user.
-app.post('/register',
-  //... your existing register code
+// User registration endpoint
 app.post('/register',
   body('email').isEmail(),
   body('password').isLength({ min: 6 }),
@@ -90,12 +87,12 @@ app.post('/register',
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    
     // TODO: Add logic to hash password and save user to the 'users' array or a database
     res.status(201).json({ message: 'User registration endpoint hit. (Logic not implemented)' });
-  });
+  }
+);
 
-
+// User login endpoint
 app.post('/login',
   body('email').isEmail(),
   body('password').exists(),
@@ -118,7 +115,6 @@ app.get('/profile', authMiddleware, (req, res) => {
 app.get('/dashboard-data', authMiddleware, (req, res) => {
   res.json({ data: 'This is sensitive dashboard data.' });
 });
-
 
 // =================================================================
 // 6. START THE SERVER (This is the very last thing)
