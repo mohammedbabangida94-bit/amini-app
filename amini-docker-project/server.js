@@ -42,7 +42,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-// =================================================================
+/// =================================================================
 // 4. AUTHENTICATION MIDDLEWARE
 // =================================================================
 const authMiddleware = (req, res, next) => {
@@ -53,7 +53,7 @@ const authMiddleware = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded.user;
-    next();
+    next(); // <-- THIS IS THE CRITICAL LINE
   } catch (err) {
     res.status(401).json({ message: 'Token is not valid' });
   }
