@@ -94,7 +94,7 @@ app.post('/register',
     // TODO: Add logic to hash password and save user to the 'users' array or a database
     res.status(201).json({ message: 'User registration endpoint hit. (Logic not implemented)' });
   }
-);
+
 
 app.post('/login',
   body('email').isEmail(),
