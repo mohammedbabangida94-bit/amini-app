@@ -64,31 +64,42 @@ const authMiddleware = (req, res, next) => {
 // =================================================================
 
 // --- Public Routes ---
-// Note: The logic for register/login is still missing.
-// This is where you would hash the password and save the user.
-// =================================================================
-// 5. ROUTES
-// =================================================================
-
-// --- Public Routes ---
-
-// Homepage route
-app.get('/', (req, res) => {
-  res.send('Welcome to the Amini App API!');
-});
 
 // User registration endpoint
 app.post('/register',
   body('email').isEmail(),
   body('password').isLength({ min: 6 }),
-  (req, res) => {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+  async (req, res) => { // <-- Make this function async
+    try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { email, password } = req.body;
+
+      // Check if user already exists
+      const userExists = users.find(user => user.email === email);
+      if (userExists) {
+        return res.status(400).json({ message: 'User already exists' });
+      }
+
+      // Hash the password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      // Save the new user (in-memory)
+      const newUser = { email, password: hashedPassword };
+      users.push(newUser);
+
+      console.log('Registered Users:', users); // For debugging
+      res.status(201).json({ message: 'User registered successfully!' });
+
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
     }
-    // TODO: Add logic to hash password and save user to the 'users' array or a database
-    res.status(201).json({ message: 'User registration endpoint hit. (Logic not implemented)' });
   }
 );
 
@@ -96,14 +107,50 @@ app.post('/register',
 app.post('/login',
   body('email').isEmail(),
   body('password').exists(),
-  (req, res) => {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+  async (req, res) => { // <-- Make this function async
+    try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { email, password } = req.body;
+
+      // Find the user
+      const user = users.find(user => user.email === email);
+      if (!user) {
+        return res.status(400).json({ message: 'Invalid credentials' });
+      }
+
+      // Compare the password
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Invalid credentials' });
+      }
+
+      // Create JWT Payload
+      const payload = {
+        user: {
+          email: user.email
+        }
+      };
+
+      // Sign the token
+      jwt.sign(
+        payload,
+        JWT_SECRET,
+        { expiresIn: 3600 }, // Token expires in 1 hour
+        (err, token) => {
+          if (err) throw err;
+          res.json({ token });
+        }
+      );
+
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
     }
-    // TODO: Add logic to find user, compare password, and generate JWT
-    res.status(200).json({ message: 'User login endpoint hit. (Logic not implemented)' });
   }
 );
 
