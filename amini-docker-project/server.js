@@ -2,6 +2,7 @@ const cors = require('cors');
 // =================================================================
 // 1. IMPORTS
 // =================================================================
+const cors = require('cors');
 const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
