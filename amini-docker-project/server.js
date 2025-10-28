@@ -1,4 +1,4 @@
-const cors = require('cors');
+
 // =================================================================
 // 1. IMPORTS
 // =================================================================
@@ -15,6 +15,7 @@ const jwt = require('jsonwebtoken');
 // 2. CONFIGURATION & APP INITIALIZATION
 // =================================================================
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = 'your-super-secret-key'; // In a real app, use environment variables
 
