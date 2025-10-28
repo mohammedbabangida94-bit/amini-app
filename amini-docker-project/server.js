@@ -74,40 +74,55 @@ const authMiddleware = (req, res, next) => {
 app.get('/', (req, res) => {
   res.send('Welcome to the Amini App API!');
 });
-app.post(
-  '/register',
-  body('email').isEmail().withMessage('Please include a valid email'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  async (req, res) => {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
 
-    const { email, password } = req.body;
-
+// User login endpoint
+app.post('/login',
+  body('email').isEmail(),
+  body('password').exists(),
+  async (req, res) => { // Make sure it's an async function
     try {
-      // 1. Check if user already exists
-      let user = users.find(u => u.email === email);
-      if (user) {
-        return res.status(400).json({ message: 'User already exists' });
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
       }
 
-      // 2. Hash the password
-      const salt = await bcrypt.genSalt(8);
-      const hashedPassword = await bcrypt.hash(password, salt);
+      const { email, password } = req.body;
 
-      // 3. Save the new user (in-memory)
-      const newUser = {
-        email,
-        password: hashedPassword,
+      // Find the user
+      const user = users.find(user => user.email === email);
+      if (!user) {
+        // We send "Invalid credentials" even if the user doesn't exist.
+        // This prevents attackers from guessing which emails are registered.
+        return res.status(400).json({ message: 'Invalid credentials' });
+      }
+
+      // --- THIS IS THE CRITICAL PART ---
+      // Compare the plain-text password from the request with the
+      // hashed password from the user in our 'database'
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Invalid credentials' });
+      }
+      // --- END CRITICAL PART ---
+
+      // Create JWT Payload
+      const payload = {
+        user: {
+          email: user.email
+        }
       };
-      users.push(newUser);
 
-      console.log('Registered Users:', users); // For debugging on your server
-
-      res.status(201).json({ message: 'User registered successfully!' });
+      // Sign the token
+      jwt.sign(
+        payload,
+        JWT_SECRET,
+        { expiresIn: 3600 }, // Token expires in 1 hour
+        (err, token) => {
+          if (err) throw err;
+          res.json({ token });
+        }
+      );
 
     } catch (err) {
       console.error(err.message);
@@ -115,7 +130,6 @@ app.post(
     }
   }
 );
-
 
 // @route   POST /login
 // @desc    Authenticate user & get token
