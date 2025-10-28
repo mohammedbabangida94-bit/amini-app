@@ -75,6 +75,44 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Amini App API!');
 });
 
+
+// User registration endpoint
+app.post('/register',
+  body('email').isEmail(),
+  body('password').isLength({ min: 6 }),
+  async (req, res) => { // Make sure it's async
+    try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { email, password } = req.body;
+
+      // Check if user already exists
+      const userExists = users.find(user => user.email === email);
+      if (userExists) {
+        return res.status(400).json({ message: 'User already exists' });
+      }
+
+      // Hash the password
+      const salt = await bcrypt.genSalt(8); // Using 8 for speed on Render
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      // Save the new user
+      const newUser = { email, password: hashedPassword };
+      users.push(newUser);
+
+      console.log('Registered Users:', users); // For debugging
+      res.status(201).json({ message: 'User registered successfully!' });
+
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server error');
+    }
+  }
+);
 // User login endpoint
 app.post('/login',
   body('email').isEmail(),
