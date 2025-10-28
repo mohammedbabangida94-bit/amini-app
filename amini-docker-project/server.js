@@ -1,3 +1,4 @@
+const cors = require('cors');
 // =================================================================
 // 1. IMPORTS
 // =================================================================
@@ -25,6 +26,9 @@ const users = [];
 
 // Apply security headers FIRST
 app.use(helmet());
+app.use(helmet());
+app.use(cors()); // <-- ADD THIS LINE
+app.use(limiter);
 
 // Apply rate limiting to all requests
 const limiter = rateLimit({
