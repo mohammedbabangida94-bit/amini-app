@@ -152,6 +152,40 @@ app.get('/dashboard-data', authMiddleware, (req, res) => {
   res.json({ data: 'This is sensitive dashboard data.' });
 });
 
+// This is your existing /dashboard-data route
+app.get('/dashboard-data', authMiddleware, (req, res) => {
+  res.json({ data: 'This is sensitive dashboard data.' });
+});
+
+// --- ADD THIS NEW ROUTE BELOW IT ---
+app.post('/api/report', authMiddleware, (req, res) => {
+  try {
+    // 1. Get the message from the request body
+    const { message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ message: 'Message is required' });
+    }
+
+    // 2. Get the user's email from the token (thanks to authMiddleware)
+    const userEmail = req.user.email;
+
+    // 3. For now, we just log it to the Render console to prove it works.
+    // (Later, this is where you'd add Twilio/SendGrid to send an SMS/email)
+    console.log(`--- NEW REPORT ---`);
+    console.log(`From: ${userEmail}`);
+    console.log(`Message: "${message}"`);
+    console.log(`------------------`);
+
+    // 4. Send a success response back to the frontend
+    res.status(201).json({ message: 'Report received successfully!' });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // =================================================================
 // 6. START THE SERVER (This is the very last thing)
 // =================================================================

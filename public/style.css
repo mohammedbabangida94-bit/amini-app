@@ -154,3 +154,7 @@ textarea {
     border-bottom: 1px dashed #ccc;
     padding-bottom: 5px;
 }
+
+.hidden {
+  display: none;
+}
