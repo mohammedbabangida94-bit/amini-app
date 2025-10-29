@@ -158,29 +158,36 @@ app.get('/dashboard-data', authMiddleware, (req, res) => {
 });
 
 // --- ADD THIS NEW ROUTE BELOW IT ---
+// REPLACE your old /api/report route with this one
 app.post('/api/report', authMiddleware, (req, res) => {
   try {
-    // 1. Get the message from the request body
-    const { message } = req.body;
+    // 1. Get the message AND location from the request body
+    const { message, location } = req.body;
 
     if (!message) {
       return res.status(400).json({ message: 'Message is required' });
     }
 
-    // 2. Get the user's email from the token (thanks to authMiddleware)
+    // 2. Get the user's email from the token
     const userEmail = req.user.email;
 
-    // 3. For now, we just log it to the Render console to prove it works.
-    // (Later, this is where you'd add Twilio/SendGrid to send an SMS/email)
+    // 3. Log the report to the console
     console.log(`--- NEW REPORT ---`);
     console.log(`From: ${userEmail}`);
     console.log(`Message: "${message}"`);
+    
+    // 4. ADDED: Log the location if it exists
+    if (location) {
+      console.log(`Location: ${location.lat}, ${location.long}`);
+    } else {
+      console.log(`Location: Not provided`);
+    }
     console.log(`------------------`);
 
-    // 4. Send a success response back to the frontend
+    // 5. Send a success response
     res.status(201).json({ message: 'Report received successfully!' });
 
-  } catch (err) {
+  } catch (err)
     console.error(err.message);
     res.status(500).send('Server Error');
   }

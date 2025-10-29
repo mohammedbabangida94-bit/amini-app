@@ -50,14 +50,19 @@ async function fetchProfileData() {
 
 // Wait for the HTML to be fully loaded before running code
 document.addEventListener('DOMContentLoaded', () => {
-    
+    let userLocation = null;
     fetchProfileData();
+
+    // This is your existing code
+  async function fetchProfileData() {
+    // ...
 
     // Find the registration form
     const registerForm = document.getElementById('register-form');
     
     if (registerForm) {
         // 1. Listen for the user clicking the "Register" button
+        
         registerForm.addEventListener('submit', async (event) => {
             event.preventDefault(); // Stop the browser from refreshing
 
@@ -127,6 +132,100 @@ if (loginForm) {
         })
       });
 
+      // This is your existing loginForm code...
+if (loginForm) {
+  // ... all your login form code ...
+}
+
+// --- ADD THIS NEW CODE BLOCK BELOW IT ---
+const sendMessageButton = document.getElementById('send-message-btn');
+const messageInput = document.getElementById('secure-message-input');
+const statusLog = document.getElementById('status-log'); // We'll show success here
+
+if (sendMessageButton) {
+  sendMessageButton.addEventListener('click', async () => {
+    const message = messageInput.value;
+    const token = localStorage.getItem('amini-token'); // Get the saved token
+
+    if (!message) {
+      alert('Please type a message first.');
+      return;
+    }
+    if (!token) {
+      alert('You must be logged in to send a message.');
+      return;
+    }
+
+    // This is the fetch, just like your profile fetch
+    try {
+      const response = await fetch('https://amin-app.onrender.com/api/report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token // <-- This proves you are logged in
+        },
+        body: JSON.stringify({
+          message: message
+          location: userLocation
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Success!
+        statusLog.innerHTML += `<p>Status: ${data.message}</p>`;
+        messageInput.value = ''; // Clear the text box
+      } else {
+        // Handle errors from the server
+        statusLog.innerHTML += `<p>Error: ${data.message}</p>`;
+      }
+
+    } catch (error) {
+      console.error('Network error:', error);
+      statusLog.innerHTML += `<p>Network error. Could not send report.</p>`;
+    }
+  });
+}
+
+// This is your existing sendMessageButton code...
+if (sendMessageButton) {
+  // ...
+}
+
+// --- ADD THIS NEW CODE BLOCK BELOW IT ---
+const locationButton = document.getElementById('get-location-btn');
+const locationDisplay = document.getElementById('location-display');
+
+if (locationButton) {
+  locationButton.addEventListener('click', () => {
+    if ("geolocation" in navigator) {
+      locationDisplay.textContent = 'Finding your location...';
+      
+      // This is the browser API that asks the user for permission
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // Success! Save the coordinates
+          userLocation = {
+            lat: position.coords.latitude,
+            long: position.coords.longitude
+          };
+          locationDisplay.textContent = `Location updated: ${userLocation.lat}, ${userLocation.long}`;
+          locationDisplay.style.color = 'green';
+        },
+        (error) => {
+          // Handle errors
+          console.error("Error getting location:", error.message);
+          locationDisplay.textContent = 'Unable to get location. Please check permissions.';
+          locationDisplay.style.color = 'red';
+        }
+      );
+    } else {
+      locationDisplay.textContent = 'Geolocation is not available on your browser.';
+      locationDisplay.style.color = 'red';
+    }
+  });
+}
       const data = await response.json();
 
       // 4. Show a success or error message
