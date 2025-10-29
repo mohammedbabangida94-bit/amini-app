@@ -28,23 +28,22 @@ const users = [];
 
 // Apply security headers FIRST
 app.use(helmet());
-app.use(cors()); // <-- ADD THIS LINE
+app.use(cors());
 
 // Apply rate limiting to all requests
-const limiter = rateLimit({
+const limiter = rateLimit({ // Define the limiter FIRST
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use(limiter);
+app.use(limiter); // Use the limiter AFTER
 
 // Middleware to parse JSON request bodies. MUST come before the routes.
 app.use(express.json());
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
-
 
 /// =================================================================
 // 4. AUTHENTICATION MIDDLEWARE
