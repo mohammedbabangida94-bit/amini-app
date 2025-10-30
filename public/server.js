@@ -1,6 +1,7 @@
 // =================================================================
 // 1. IMPORTS
 // =================================================================
+const mongoose = require('mongoose');
 const cors = require('cors');
 const express = require('express');
 const path = require('path');
@@ -11,15 +12,48 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 // =================================================================
-// 2. CONFIGURATION & APP INITIALIZATION
+// 2. CONFIGURATION & DATABASE CONNECTION
 // =================================================================
 const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = 'your-super-secret-key'; // In a real app, use environment variables
 
-// This is a placeholder for your database. **Needs persistence for production!**
-const users = [];
+// ⚠️ IMPORTANT: Replace 'YOUR_PASSWORD' with your actual MongoDB Atlas password
+const MONGODB_URI = 'mongodb+srv://appUser:YOUR_PASSWORD@yourcluster.mongodb.net/amini-db?retryWrites=true&w=majority';
+
+// Connect to MongoDB
+const connectDB = async () => {
+    try {
+        await mongoose.connect(MONGODB_URI);
+        console.log('MongoDB Connected...');
+    } catch (err) {
+        console.error('MongoDB Connection Error:', err.message);
+        process.exit(1); 
+    }
+};
+connectDB(); // Execute the connection function
+
+// =================================================================
+// 2.5 USER MODEL (Blueprint for the database)
+// =================================================================
+const UserSchema = new mongoose.Schema({
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: { // Stores the HASHED password
+        type: String,
+        required: true
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+const User = mongoose.model('user', UserSchema); // Export the Model
 
 // =================================================================
 // 3. GLOBAL MIDDLEWARE (Order is very important here!)
@@ -28,7 +62,7 @@ const users = [];
 // Apply security headers FIRST
 app.use(helmet());
 
-// Apply rate limiting to all requests
+// Apply rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100,
@@ -37,7 +71,7 @@ const limiter = rateLimit({
 });
 app.use(limiter); 
 
-// Allow Cross-Origin Requests from all origins (required for local dev testing)
+// Allow Cross-Origin Requests from all origins
 app.use(cors()); 
 
 // Middleware to parse JSON request bodies. MUST come before the routes.
@@ -71,8 +105,7 @@ const authMiddleware = (req, res, next) => {
 
 // Homepage route
 app.get('/', (req, res) => {
-    // Send a simple message or redirect to your index.html if necessary
-    res.send('Welcome to the Amini App API! Use the /public/index.html route to view the app.');
+    res.send('Welcome to the Amini App API! Use your Netlify URL to view the app.');
 });
 
 // User registration endpoint
@@ -87,18 +120,23 @@ app.post('/register',
             }
 
             const { email, password } = req.body;
-            const userExists = users.find(user => user.email === email);
+
+            // Check if user already exists in MongoDB
+            let userExists = await User.findOne({ email }); 
             if (userExists) {
                 return res.status(400).json({ message: 'User already exists' });
             }
 
             const salt = await bcrypt.genSalt(8);
             const hashedPassword = await bcrypt.hash(password, salt);
-            const newUser = { email, password: hashedPassword };
-            users.push(newUser);
 
-            console.log('Registered Users:', users);
+            // Create and save the new user to MongoDB
+            const newUser = new User({ email, password: hashedPassword }); 
+            await newUser.save(); 
+
+            console.log('Registered User saved to MongoDB');
             res.status(201).json({ message: 'User registered successfully!' });
+
         } catch (err) {
             console.error(err.message);
             res.status(500).send('Server error');
@@ -118,7 +156,9 @@ app.post('/login',
             }
 
             const { email, password } = req.body;
-            const user = users.find(user => user.email === email);
+            
+            // Find user in MongoDB
+            const user = await User.findOne({ email });
             if (!user) {
                 return res.status(400).json({ message: 'Invalid credentials' });
             }
@@ -154,7 +194,7 @@ app.get('/dashboard-data', authMiddleware, (req, res) => {
     res.json({ data: 'This is sensitive dashboard data.' });
 });
 
-// User report endpoint (The corrected block)
+// User report endpoint
 app.post('/api/report', authMiddleware, (req, res) => {
     try {
         const { message, location } = req.body;
@@ -171,6 +211,7 @@ app.post('/api/report', authMiddleware, (req, res) => {
         
         if (location) {
             console.log(`Location: ${location.lat}, ${location.long}`);
+            // 💡 TO-DO: In a real app, save this report data to a MongoDB collection
         } else {
             console.log(`Location: Not provided`);
         }
