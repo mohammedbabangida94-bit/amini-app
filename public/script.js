@@ -181,3 +181,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// =================================================================
+// 3. AUTH TOGGLE LOGIC (Add this whole block)
+// =================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // ... your existing code (fetchProfileData call, registerForm, loginForm, etc.) ...
+  
+  // --- Form Toggle Listeners ---
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+  const showRegisterLink = document.getElementById('show-register-link');
+  const showLoginLink = document.getElementById('show-login-link');
+  const loginMessage = document.getElementById('login-message-area');
+  const registerMessage = document.getElementById('message-area');
+
+
+  if (showRegisterLink && showLoginLink) {
+    showRegisterLink.addEventListener('click', (event) => {
+      event.preventDefault(); // Stop the link from jumping the page
+      loginForm.classList.add('hidden');
+      registerForm.classList.remove('hidden');
+      // Also clear any old error messages
+      if(loginMessage) loginMessage.textContent = ''; 
+    });
+
+    showLoginLink.addEventListener('click', (event) => {
+      event.preventDefault(); // Stop the link from jumping the page
+      loginForm.classList.remove('hidden');
+      registerForm.classList.add('hidden');
+      // Also clear any old error messages
+      if(registerMessage) registerMessage.textContent = '';
+    });
+  }
+
+  // ... your other existing code (locationButton, sendMessageButton, etc.) ...
+});
