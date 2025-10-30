@@ -4,6 +4,7 @@
 // =================================================================
 const cors = require('cors');
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -16,6 +17,9 @@ const jwt = require('jsonwebtoken');
 // =================================================================
 const app = express();
 app.set('trust proxy', 1);
+// 2. Configure CORS middleware (Place this near the top, after app initialization)
+// The configuration below allows requests from ANY origin during development.
+app.use(cors()); 
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = 'your-super-secret-key'; // In a real app, use environment variables
 
@@ -187,7 +191,7 @@ app.post('/api/report', authMiddleware, (req, res) => {
     // 5. Send a success response
     res.status(201).json({ message: 'Report received successfully!' });
 
-  } catch (err)
+   catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
