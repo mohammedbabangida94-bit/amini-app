@@ -20,8 +20,18 @@ app.set('trust proxy', 1);
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = 'your-super-secret-key'; // In a real app, use environment variables
 
-// ⚠️ IMPORTANT: Replace 'YOUR_PASSWORD' with your actual MongoDB Atlas password
-const MONGODB_URI = 'mongodb+srv://appUser:YOUR_PASSWORD@yourcluster.mongodb.net/amini-db?retryWrites=true&w=majority';
+// === START OF HARDCODED FINAL FIX ===
+const FINAL_URI = "mongodb://mohammedbabangida94_db_user:NewSimplePassword!@cluster0-shard-00-00.pjcdfzt.mongodb.net:27017,cluster0-shard-00-01.pjcdfzt.mongodb.net:27017,cluster0-shard-00-02.pjcdfzt.mongodb.net:27017/aminidb?replicaSet=Cluster0&ssl=true&authSource=admin";
+
+mongoose.connect(FINAL_URI)
+  .then(() => {
+    console.log("MongoDB Hardcoded Connection Successful!"); 
+  })
+  .catch((err) => {
+    console.error("MongoDB Hardcoded Connection Error:", err);
+    process.exit(1);
+  });
+// === END OF HARDCODED FINAL FIX ===
 
 // Connect to MongoDB
 const connectDB = async () => {
