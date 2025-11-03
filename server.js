@@ -15,24 +15,32 @@ const jwt = require('jsonwebtoken');
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
 // =================================================================
+// =================================================================
+// 2. CONFIGURATION & DATABASE CONNECTION
+// =================================================================
 const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = 'your-super-secret-key'; // In a real app, use environment variables
 
-// === START OF HARDCODED FINAL FIX ===
-const FINAL_URI = "mongodb://mohammedbabangida94_db_user:NewSimplePassword!@cluster0-shard-00-00.pjcdfzt.mongodb.net:27017,cluster0-shard-00-01.pjcdfzt.mongodb.net:27017,cluster0-shard-00-02.pjcdfzt.mongodb.net:27017/aminidb?replicaSet=Cluster0&ssl=true&authSource=admin";
+// === START OF HARDCODED FINAL FIX (Corrected) ===
+
+// 1. Ensure FINAL_URI is a single line, NO SPACES/BREAKS, and use your correct password
+const FINAL_URI = "mongodb://mohammedbabangida94_db_user:FinalTry123@cluster0-shard-00-00.pjcdfzt.mongodb.net:27017,cluster0-shard-00-01.pjcdfzt.mongodb.net:27017,cluster0-shard-00-02.pjcdfzt.mongodb.net:27017/aminidb?replicaSet=Cluster0&ssl=true&authSource=admin"; 
+
+// 2. Call mongoose.connect ONCE with options
 mongoose.connect(FINAL_URI, {
-serverSelectionTimeoutMS: 5000,
-socketTimeoutMS: 45000,
-mongoose.connect(FINAL_URI)
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+}) // <--- Note the missing comma and closing parenthesis here!
   .then(() => {
-    console.log("MongoDB Hardcoded Connection Successful!"); 
+    console.log("MongoDB Hardcoded Connection Successful! 🥳"); 
   })
   .catch((err) => {
     console.error("MongoDB Hardcoded Connection Error:", err);
     process.exit(1);
   });
+// === END OF HARDCODED FINAL FIX ===
 // =================================================================
 // 2.5 USER MODEL (Blueprint for the database)
 // =================================================================
