@@ -11,6 +11,10 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+mongoose.connect(FINAL_URI, {
+    serverSelectionTimeoutMS: 5000, 
+    socketTimeoutMS: 45000,        
+})
 
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
