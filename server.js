@@ -31,20 +31,6 @@ mongoose.connect(FINAL_URI)
     console.error("MongoDB Hardcoded Connection Error:", err);
     process.exit(1);
   });
-// === END OF HARDCODED FINAL FIX ===
-
-// Connect to MongoDB
-const connectDB = async () => {
-    try {
-        await mongoose.connect(MONGODB_URI);
-        console.log('MongoDB Connected...');
-    } catch (err) {
-        console.error('MongoDB Connection Error:', err.message);
-        process.exit(1); 
-    }
-};
-connectDB(); // Execute the connection function
-
 // =================================================================
 // 2.5 USER MODEL (Blueprint for the database)
 // =================================================================
