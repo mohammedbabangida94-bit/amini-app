@@ -11,10 +11,6 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-mongoose.connect(FINAL_URI, {
-    serverSelectionTimeoutMS: 5000, 
-    socketTimeoutMS: 45000,        
-})
 
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
@@ -26,7 +22,9 @@ const JWT_SECRET = 'your-super-secret-key'; // In a real app, use environment va
 
 // === START OF HARDCODED FINAL FIX ===
 const FINAL_URI = "mongodb://mohammedbabangida94_db_user:NewSimplePassword!@cluster0-shard-00-00.pjcdfzt.mongodb.net:27017,cluster0-shard-00-01.pjcdfzt.mongodb.net:27017,cluster0-shard-00-02.pjcdfzt.mongodb.net:27017/aminidb?replicaSet=Cluster0&ssl=true&authSource=admin";
-
+mongoose.connect(FINAL_URI, {
+serverSelectionTimeoutMS: 5000,
+socketTimeoutMS: 45000,
 mongoose.connect(FINAL_URI)
   .then(() => {
     console.log("MongoDB Hardcoded Connection Successful!"); 
