@@ -11,10 +11,6 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
-// =================================================================
-// 2. CONFIGURATION & DATABASE CONNECTION
-// =================================================================
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
 // =================================================================
