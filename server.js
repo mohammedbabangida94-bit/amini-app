@@ -74,6 +74,11 @@ app.use(limiter);
 'http://127.0.0.1:5500',  
 'http://localhost:5500',
 
+app.use(cors({
+    origin: allowedOrigins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Allow cookies/auth headers
+    }));
 // Middleware to parse JSON request bodies. MUST come before the routes.
 app.use(express.json());
 
