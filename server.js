@@ -19,43 +19,11 @@ app.set('trust proxy', 1);
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = 'your-super-secret-key'; // In a real app, use environment variables
 
-// === START OF HARDCODED FINAL FIX (Corrected) ===
 
- 
-
-// 2. Call mongoose.connect ONCE with options
-mongoose.connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-}) // <--- Note the missing comma and closing parenthesis here!
-  .then(() => {
-    console.log("MongoDB Connection Successful! 🥳(Via Env Variable)") 
-  })
-  .catch((err) => {
-    console.error("MongoDB Hardcoded Connection Error:", err);
-    process.exit(1);
-  });
-// === END OF HARDCODED FINAL FIX ===
 // =================================================================
 // 2.5 USER MODEL (Blueprint for the database)
 // =================================================================
-const UserSchema = new mongoose.Schema({
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    password: { // Stores the HASHED password
-        type: String,
-        required: true
-    },
-    date: {
-        type: Date,
-        default: Date.now
-    }
-});
 
-const User = mongoose.model('user', UserSchema); // Export the Model
 
 // =================================================================
 // 3. GLOBAL MIDDLEWARE (Order is very important here!)
@@ -158,8 +126,6 @@ app.post('/login',
             }
 
             const { email, password } = req.body;
-            
-            // Find user in MongoDB
             const user = await User.findOne({ email });
             if (!user) {
                 return res.status(400).json({ message: 'Invalid credentials' });
