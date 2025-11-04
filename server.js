@@ -70,7 +70,9 @@ const limiter = rateLimit({
 app.use(limiter); 
 
 // Allow Cross-Origin Requests from all origins
-app.use(cors()); 
+'https://amini-app-new.onrender.com',
+'http://127.0.0.1:5500',  
+'http://localhost:5500',
 
 // Middleware to parse JSON request bodies. MUST come before the routes.
 app.use(express.json());
