@@ -76,6 +76,7 @@ const allowedOrigins = [ // <-- FIX: This variable was missing!
     'https://amini-app-new.onrender.com', // Your deployed Render backend URL
     'http://127.0.0.1:5500',               // Local development server
     'http://localhost:5500',              // Alternative local development server
+    'https://127.0.0.1:5500',
 ];
 
 app.use(cors({
