@@ -11,47 +11,49 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
 // =================================================================
 const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 10000;
-const JWT_SECRET = 'your-super-secret-key'; // In a real app, use environment variables
+// NOTE: Use environment variables for JWT_SECRET in production!
+const JWT_SECRET = 'your-super-secret-key'; 
 
 // 2. Call mongoose.connect ONCE with options
 mongoose.connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-}) // <--- Note the missing comma and closing parenthesis here!
-  .then(() => {
-    console.log("MongoDB Connection Successful! 🥳(Via Env Variable)");
-  })
-  .catch((err) => {
-    console.error("MongoDB Hardcoded Connection Error:", err);
-    process.exit(1);
-  });
-// === END OF HARDCODED FINAL FIX ===
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+}) // <-- FIX: Correct closing of the mongoose.connect() function
+  .then(() => {
+    console.log("MongoDB Connection Successful! 🥳(Via Env Variable)");
+  })
+  .catch((err) => {
+    console.error("MongoDB Connection Error:", err);
+    process.exit(1);
+  });
+
 // =================================================================
 // 2.5 USER MODEL (Blueprint for the database)
 // =================================================================
 const UserSchema = new mongoose.Schema({
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    password: { // Stores the HASHED password
-        type: String,
-        required: true
-    },
-    date: {
-        type: Date,
-        default: Date.now
-    }
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: { // Stores the HASHED password
+        type: String,
+        required: true
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    }
 });
 
-const User = mongoose.model('user', UserSchema); // Export the Model
+const User = mongoose.model('user', UserSchema);
 
 // =================================================================
 // 3. GLOBAL MIDDLEWARE (Order is very important here!)
@@ -62,44 +64,48 @@ app.use(helmet());
 
 // Apply rate limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: false,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 app.use(limiter); 
 
-// Allow Cross-Origin Requests from all origins
-'https://amini-app-new.onrender.com',
-'http://127.0.0.1:5500',  
-'http://localhost:5500',
+// === FIX: DEFINE allowedOrigins variable and apply CORS middleware ===
+const allowedOrigins = [ // <-- FIX: This variable was missing!
+    'https://amini-app-new.onrender.com', // Your deployed Render backend URL
+    'http://127.0.0.1:5500',               // Local development server
+    'http://localhost:5500',              // Alternative local development server
+];
 
 app.use(cors({
-    origin: allowedOrigins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // Allow cookies/auth headers
-    }));
+    origin: allowedOrigins, // <-- Now it correctly uses the defined array
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Allow cookies/auth headers
+    }));
+// === END CORS FIX ===
+
 // Middleware to parse JSON request bodies. MUST come before the routes.
 app.use(express.json());
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-/// =================================================================
+// =================================================================
 // 4. AUTHENTICATION MIDDLEWARE
 // =================================================================
 const authMiddleware = (req, res, next) => {
-    const token = req.header('x-auth-token');
-    if (!token) {
-        return res.status(401).json({ message: 'No token, authorization denied' });
-    }
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded.user;
-        next(); 
-    } catch (err) {
-        res.status(401).json({ message: 'Token is not valid' });
-    }
+    const token = req.header('x-auth-token');
+    if (!token) {
+        return res.status(401).json({ message: 'No token, authorization denied' });
+    }
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded.user;
+        next(); 
+    } catch (err) {
+        res.status(401).json({ message: 'Token is not valid' });
+    }
 };
 
 // =================================================================
@@ -110,124 +116,124 @@ const authMiddleware = (req, res, next) => {
 
 // Homepage route
 app.get('/', (req, res) => {
-    res.send('Welcome to the Amini App API! Use your Netlify URL to view the app.');
+    res.send('Welcome to the Amini App API! Use your Netlify URL to view the app.');
 });
 
 // User registration endpoint
 app.post('/register',
-    body('email').isEmail(),
-    body('password').isLength({ min: 6 }),
-    async (req, res) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
+    body('email').isEmail(),
+    body('password').isLength({ min: 6 }),
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+ }
 
-            const { email, password } = req.body;
+            const { email, password } = req.body;
 
-            // Check if user already exists in MongoDB
-            let userExists = await User.findOne({ email }); 
-            if (userExists) {
-                return res.status(400).json({ message: 'User already exists' });
-            }
+            // Check if user already exists in MongoDB
+            let userExists = await User.findOne({ email }); 
+            if (userExists) {
+                return res.status(400).json({ message: 'User already exists' });
+            }
 
-            const salt = await bcrypt.genSalt(8);
-            const hashedPassword = await bcrypt.hash(password, salt);
+            const salt = await bcrypt.genSalt(8);
+            const hashedPassword = await bcrypt.hash(password, salt);
 
-            // Create and save the new user to MongoDB
-            const newUser = new User({ email, password: hashedPassword }); 
-            await newUser.save(); 
+            // Create and save the new user to MongoDB
+            const newUser = new User({ email, password: hashedPassword }); 
+            await newUser.save(); 
 
-            console.log('Registered User saved to MongoDB');
-            res.status(201).json({ message: 'User registered successfully!' });
+            console.log('Registered User saved to MongoDB');
+            res.status(201).json({ message: 'User registered successfully!' });
 
-        } catch (err) {
-            console.error(err.message);
-            res.status(500).send('Server error');
-        }
-    }
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).send('Server error');
+        }
+    }
 );
 
 // User login endpoint
 app.post('/login',
-    body('email').isEmail(),
-    body('password').exists(),
-    async (req, res) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
+    body('email').isEmail(),
+    body('password').exists(),
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
 
-            const { email, password } = req.body;
-            
-            // Find user in MongoDB
-            const user = await User.findOne({ email });
-            if (!user) {
-                return res.status(400).json({ message: 'Invalid credentials' });
-            }
+            const { email, password } = req.body;
+            
+            // Find user in MongoDB
+            const user = await User.findOne({ email });
+            if (!user) {
+                return res.status(400).json({ message: 'Invalid credentials' });
+            }
 
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
-                return res.status(400).json({ message: 'Invalid credentials' });
-            }
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: 'Invalid credentials' });
+            }
 
-            const payload = { user: { email: user.email } };
-            jwt.sign(
-                payload,
-                JWT_SECRET,
-                { expiresIn: 3600 },
-                (err, token) => {
-                    if (err) throw err;
-                    res.json({ token });
-                }
-            );
-        } catch (err) {
-            console.error(err.message);
-            res.status(500).send('Server error');
-        }
-    }
+            const payload = { user: { email: user.email } };
+            jwt.sign(
+                payload,
+                JWT_SECRET,
+                { expiresIn: 3600 },
+                (err, token) => {
+                    if (err) throw err;
+                    res.json({ token });
+                }
+            );
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).send('Server error');
+        }
+    }
 );
 
 // --- Protected Routes ---
 app.get('/profile', authMiddleware, (req, res) => {
-    res.json({ message: `Welcome to your profile, ${req.user.email}` });
+    res.json({ message: `Welcome to your profile, ${req.user.email}` });
 });
 
 app.get('/dashboard-data', authMiddleware, (req, res) => {
-    res.json({ data: 'This is sensitive dashboard data.' });
+    res.json({ data: 'This is sensitive dashboard data.' });
 });
 
 // User report endpoint
 app.post('/api/report', authMiddleware, (req, res) => {
-    try {
-        const { message, location } = req.body;
+    try {
+        const { message, location } = req.body;
 
-        if (!message) {
-            return res.status(400).json({ message: 'Message is required' });
-        }
+        if (!message) {
+            return res.status(400).json({ message: 'Message is required' });
+        }
 
-        const userEmail = req.user.email;
+        const userEmail = req.user.email;
 
-        console.log(`--- NEW REPORT ---`);
-        console.log(`From: ${userEmail}`);
-        console.log(`Message: "${message}"`);
-        
-        if (location) {
-            console.log(`Location: ${location.lat}, ${location.long}`);
-            // 💡 TO-DO: In a real app, save this report data to a MongoDB collection
-        } else {
-            console.log(`Location: Not provided`);
-        }
-        console.log(`------------------`);
+        console.log(`--- NEW REPORT ---`);
+        console.log(`From: ${userEmail}`);
+        console.log(`Message: "${message}"`);
+        
+        if (location) {
+            console.log(`Location: ${location.lat}, ${location.long}`);
+            // 💡 TO-DO: In a real app, save this report data to a MongoDB collection
+        } else {
+            console.log(`Location: Not provided`);
+        }
+        console.log(`------------------`);
 
-        res.status(201).json({ message: 'Report received successfully!' });
+        res.status(201).json({ message: 'Report received successfully!' });
 
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
 });
 
 
@@ -235,5 +241,5 @@ app.post('/api/report', authMiddleware, (req, res) => {
 // 6. START THE SERVER
 // =================================================================
 app.listen(PORT, () => {
-    console.log(`Amini app is running on http://0.0.0.0:${PORT}`);
+    console.log(`Amini app is running on http://0.0.0.0:${PORT}`);
 });
