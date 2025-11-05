@@ -55,6 +55,28 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model('user', UserSchema);
 
+// 2.6 REPORT MODEL (To store user activities)
+const ReportSchema = new mongoose.Schema({
+    userEmail: {
+        type: String,
+        required: true
+    },
+    message: {
+        type: String,
+        required: true
+    },
+    location: {
+        lat: Number,
+        long: Number
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+const Report = mongoose.model('report', ReportSchema);
+
 // =================================================================
 // 3. GLOBAL MIDDLEWARE (Order is very important here!)
 // =================================================================
@@ -208,7 +230,7 @@ app.get('/dashboard-data', authMiddleware, (req, res) => {
 });
 
 // User report endpoint
-app.post('/api/report', authMiddleware, (req, res) => {
+app.post('/api/report', authMiddleware, async (req, res) => {
     try {
         const { message, location } = req.body;
 
@@ -217,6 +239,17 @@ app.post('/api/report', authMiddleware, (req, res) => {
         }
 
         const userEmail = req.user.email;
+
+        // --- NEW CODE: Create and save report to MongoDB ---
+        const newReport = new Report({
+            userEmail,
+            message,
+            location: location || {} // Ensure location is an object if not provided
+        });
+
+        await newReport.save(); // <-- THIS IS THE CRITICAL LINE
+        console.log(`Report from ${userEmail} saved to MongoDB.`);
+        // --- END NEW CODE ---
 
         console.log(`--- NEW REPORT ---`);
         console.log(`From: ${userEmail}`);
