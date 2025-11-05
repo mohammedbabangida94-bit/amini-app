@@ -261,12 +261,13 @@ app.post('/api/report', authMiddleware, async (req, res) => {
         } else {
             console.log(`Location: Not provided`);
         }
-        console.log(`------------------`);
+        await newReport.save();
+        console.log('Report from ${userEmail} saved to MongoDB.');
 
         res.status(201).json({ message: 'Report received successfully!' });
 
     } catch (err) {
-        console.error(err.message);
+        console.error( "Report save error:", err.message);
         res.status(500).send('Server Error');
     }
 });
