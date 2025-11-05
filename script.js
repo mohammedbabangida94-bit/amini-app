@@ -16,7 +16,7 @@ async function fetchProfileData() {
 
   // We have a token, let's use it
   try {
-    const response = await fetch('https://amin-app.onrender.com/profile', {
+    const response = await fetch('https://amini-app-new.onrender.com/profile', {
       method: 'GET',
       headers: {
         'x-auth-token': token // Send the token in the header
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const messageArea = document.getElementById('message-area');
 
       try {
-        const response = await fetch('https://amin-app.onrender.com/register', {
+        const response = await fetch('https://amini-app-new.onrender.com/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const messageArea = document.getElementById('login-message-area');
 
       try {
-        const response = await fetch('https://amin-app.onrender.com/login', {
+        const response = await fetch('https://amini-app-new.onrender.com/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!token) { alert('You must be logged in.'); return; }
 
       try {
-        const response = await fetch('https://amin-app.onrender.com/api/report', {
+        const response = await fetch('https://amini-app-new.onrender.com/api/report', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
