@@ -77,6 +77,7 @@ const allowedOrigins = [ // <-- FIX: This variable was missing!
     'http://127.0.0.1:5500',               // Local development server
     'http://localhost:5500',              // Alternative local development server
     'https://127.0.0.1:5500',
+    'https://amini-frontend-client.vercel.app',
 ];
 
 app.use(cors({
