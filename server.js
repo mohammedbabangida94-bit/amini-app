@@ -25,7 +25,7 @@ const JWT_SECRET = 'your-super-secret-key';
 mongoose.connect(process.env.MONGO_URI, {
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
-}) // <-- FIX: Correct closing of the mongoose.connect() function
+}) 
   .then(() => {
     console.log("MongoDB Connection Successful! 🥳(Via Env Variable)");
   })
@@ -57,22 +57,22 @@ const User = mongoose.model('user', UserSchema);
 
 // 2.6 REPORT MODEL (To store user activities)
 const ReportSchema = new mongoose.Schema({
-    userEmail: {
-        type: String,
-        required: true
-    },
-    message: {
-        type: String,
-        required: true
-    },
-    location: {
-        lat: Number,
-        long: Number
-    },
-    date: {
-        type: Date,
-        default: Date.now
-    }
+    userEmail: {
+        type: String,
+        required: true
+    },
+    message: {
+        type: String,
+        required: true
+    },
+    location: {
+        lat: Number,
+        long: Number
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    }
 });
 
 const Report = mongoose.model('report', ReportSchema);
@@ -95,11 +95,11 @@ app.use(limiter);
 
 // === FIX: DEFINE allowedOrigins variable and apply CORS middleware ===
 const allowedOrigins = [ // <-- FIX: This variable was missing!
-    'https://amini-app-new.onrender.com', // Your deployed Render backend URL
-    'http://127.0.0.1:5500',               // Local development server
-    'http://localhost:5500',              // Alternative local development server
-    'https://127.0.0.1:5500',
-    'https://amini-frontend-client.vercel.app',
+    'https://amini-app-new.onrender.com', // Your deployed Render backend URL
+    'http://127.0.0.1:5500',               // Local development server
+    'http://localhost:5500',              // Alternative local development server
+    'https://127.0.0.1:5500',
+    'https://amini-frontend-client.vercel.app',
 ];
 
 app.use(cors({
@@ -152,7 +152,7 @@ app.post('/register',
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
- }
+ }
 
             const { email, password } = req.body;
 
@@ -229,6 +229,25 @@ app.get('/dashboard-data', authMiddleware, (req, res) => {
     res.json({ data: 'This is sensitive dashboard data.' });
 });
 
+// --- NEW ROUTE: GET ACTIVITY LOG REPORTS ---
+app.get('/api/activity-log', authMiddleware, async (req, res) => {
+    try {
+        const userEmail = req.user.email; // Extracted from the token
+        
+        // Find all reports associated with this user, sorting by date descending
+        const reports = await Report.find({ userEmail: userEmail }).sort({ date: -1 });
+
+        // Send the reports back to the frontend
+        res.json(reports);
+
+    } catch (err) {
+        console.error("Error fetching activity log:", err.message);
+        res.status(500).send('Server Error');
+    }
+});
+// -------------------------------------------
+
+
 // User report endpoint
 app.post('/api/report', authMiddleware, async (req, res) => {
     try {
@@ -240,34 +259,33 @@ app.post('/api/report', authMiddleware, async (req, res) => {
 
         const userEmail = req.user.email;
 
-        // --- NEW CODE: Create and save report to MongoDB ---
-        const newReport = new Report({
-            userEmail,
-            message,
-            location: location || {} // Ensure location is an object if not provided
-        });
+        // --- NEW CODE: Create and save report to MongoDB ---
+        const newReport = new Report({
+            userEmail,
+            message,
+            location: location || {} // Ensure location is an object if not provided
+        });
 
-        await newReport.save(); // <-- THIS IS THE CRITICAL LINE
-        console.log(`Report from ${userEmail} saved to MongoDB.`);
-        // --- END NEW CODE ---
+        await newReport.save(); // <-- Save the report
+        console.log(`Report from ${userEmail} saved to MongoDB.`);
+        // --- END NEW CODE ---
 
+        // NOTE: The console.log section below is mostly for debugging, 
+        // and the previous redundant save has been removed.
         console.log(`--- NEW REPORT ---`);
         console.log(`From: ${userEmail}`);
         console.log(`Message: "${message}"`);
         
         if (location) {
             console.log(`Location: ${location.lat}, ${location.long}`);
-            // 💡 TO-DO: In a real app, save this report data to a MongoDB collection
         } else {
             console.log(`Location: Not provided`);
         }
-        await newReport.save();
-        console.log('Report from ${userEmail} saved to MongoDB.');
 
         res.status(201).json({ message: 'Report received successfully!' });
 
     } catch (err) {
-        console.error( "Report save error:", err.message);
+        console.error( "Error processing report:", err.message);
         res.status(500).send('Server Error');
     }
 });
