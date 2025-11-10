@@ -108,6 +108,8 @@ const allowedOrigins = [ // <-- FIX: This variable was missing!
     'http://localhost:5500',              // Alternative local development server
     'https://127.0.0.1:5500',
     'https://amini-frontend-client.vercel.app',
+    'https://amini-app.com', // ADDED: Your naked custom domain
+    'https://www.amini-app.com' // ADDED: The 'www' version of your custom domain
 ];
 
 app.use(cors({
