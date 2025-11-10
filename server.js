@@ -12,6 +12,14 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+// Add this near the top of your server.js file
+const twilio = require('twilio'); 
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+// Initialize the Twilio client using the secrets from Render
+const twilioClient = new twilio(accountSid, authToken);
+
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
 // =================================================================
@@ -281,8 +289,31 @@ app.post('/api/report', authMiddleware, async (req, res) => {
         } else {
             console.log(`Location: Not provided`);
         }
+      // -----------------------------------------------------------------
+        // START NEW TWILIO SMS INTEGRATION
+        // -----------------------------------------------------------------
+        const recipientPhoneNumber = '+2348069358541'; // <-- REPLACE with your TEST PHONE NUMBER
+        
+        const alertMessage = `AMINI SOS: ${userEmail} needs help. Message: "${message}". Location: Lat ${location.lat || 'N/A'}, Long ${location.long || 'N/A'}`;
+        
+        try {
+            const twilioResponse = await twilioClient.messages.create({
+                body: alertMessage,
+                to: recipientPhoneNumber, 
+                from: process.env.TWILIO_PHONE_NUMBER // Your sender number from Render
+            });
+            console.log(`Twilio Message Sent. SID: ${twilioResponse.sid}`);
+        } catch (smsError) {
+            // Log the SMS error but do NOT crash the report save process
+            console.error("CRITICAL SMS SEND FAILURE (Twilio):", smsError);
+        }
+        // -----------------------------------------------------------------
+        // END NEW TWILIO SMS INTEGRATION
+        // -----------------------------------------------------------------  
 
-        res.status(201).json({ message: 'Report received successfully!' });
+// ... (existing console logging)        
+
+        res.status(201).json({ message: 'SOS report saved and alert triggered!' });
 
     } catch (err) {
         console.error( "Error processing report:", err.message);
