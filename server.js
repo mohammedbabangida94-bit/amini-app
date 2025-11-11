@@ -294,7 +294,7 @@ app.post('/api/report', authMiddleware, async (req, res) => {
       // -----------------------------------------------------------------
         // START NEW TWILIO SMS INTEGRATION
         // -----------------------------------------------------------------
-        const recipientPhoneNumber = '+234 08085869858'; // <-- REPLACE with your TEST PHONE NUMBER
+        const recipientPhoneNumber = '+234 08069358541'; // <-- REPLACE with your TEST PHONE NUMBER
         
         const alertMessage = `AMINI SOS: ${userEmail} needs help. Message: "${message}". Location: Lat ${location.lat || 'N/A'}, Long ${location.long || 'N/A'}`;
         
