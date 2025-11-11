@@ -38,6 +38,53 @@ async function fetchProfileData() {
       localStorage.removeItem('amini-token');
       document.getElementById('register-screen').classList.remove('hidden');
       document.getElementById('main-app').classList.add('hidden');
+      
+      async function fetchAndRenderLog() {
+    const logDisplay = document.getElementById('activity-log-display');
+    logDisplay.innerHTML = '<p style="color: #6c757d;">Fetching latest reports...</p>';
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${backendUrl}/api/reports`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const reports = await response.json();
+
+        if (response.ok) {
+            logDisplay.innerHTML = ''; 
+            if (reports.length === 0) {
+                logDisplay.innerHTML = '<p>No reports found.</p>';
+                return;
+            }
+
+            reports.forEach(report => {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                
+                // Using report.date field from MongoDB
+                const date = new Date(report.date).toLocaleString(); 
+                
+                logEntry.innerHTML = `
+                    <p style="font-weight: 600;">Status: SOS Report Sent</p>
+                    <p style="font-size: 0.8rem; color: #333;">Date: ${date}</p>
+                    <p style="font-size: 0.8rem; color: #333;">Message: ${report.message || 'N/A'}</p>
+                    <hr style="border-top: 1px dashed #ddd; margin: 5px 0;">
+                `;
+                logDisplay.appendChild(logEntry);
+            });
+        } else {
+            logDisplay.innerHTML = `<p style="color: var(--color-alert-red);">Error: ${reports.message || 'Failed to load log.'}</p>`;
+        }
+
+    } catch (error) {
+        logDisplay.innerHTML = `<p style="color: var(--color-alert-red);">Network Error loading log.</p>`;
+    }
+}
     }
   } catch (error) {
     console.error('Error fetching profile:', error);
