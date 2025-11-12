@@ -1,51 +1,22 @@
+// IMPORTANT: Replace the backend URL with your live Render URL
+const backendUrl = 'https://amini-app-new.onrender.com';
+
 // =================================================================
 // 1. GLOBAL FUNCTIONS
 // =================================================================
 
-
-
-  if (!token) {
-    // No token found, make sure login screen is visible
-    document.getElementById('register-screen').classList.remove('hidden');
-    document.getElementById('main-app').classList.add('hidden');
-    return;
-  }
-
-  // We have a token, let's use it
-  try {
-    const response = await fetch('https://amini-app-new.onrender.com/profile', {
-      method: 'GET',
-      headers: {
-        'x-auth-token': token // Send the token in the header
-      }
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      // SUCCESS! Token is valid.
-      document.getElementById('register-screen').classList.add('hidden');
-      document.getElementById('main-app').classList.remove('hidden');
-
-      // Update the welcome message
-      const email = data.message.split(', ')[1]; 
-      welcomeMessage.textContent = `Welcome, ${email}!`;
-    } else {
-      // Token was bad (e.g., expired)
-      localStorage.removeItem('amini-token');
-      document.getElementById('register-screen').classList.remove('hidden');
-      document.getElementById('main-app').classList.add('hidden');
-      
-      async function fetchAndRenderLog() {
+// Function to fetch and display the Activity Log
+async function fetchAndRenderLog() {
     const logDisplay = document.getElementById('activity-log-display');
     logDisplay.innerHTML = '<p style="color: #6c757d;">Fetching latest reports...</p>';
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('amini-token'); // Use the correct key: amini-token
         const response = await fetch(`${backendUrl}/api/reports`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                // Ensure you send the token correctly: Bearer <token>
+                'Authorization': `Bearer ${token}`, 
                 'Content-Type': 'application/json'
             }
         });
@@ -63,7 +34,6 @@
                 const logEntry = document.createElement('div');
                 logEntry.className = 'log-entry';
                 
-                // Using report.date field from MongoDB
                 const date = new Date(report.date).toLocaleString(); 
                 
                 logEntry.innerHTML = `
@@ -82,182 +52,185 @@
         logDisplay.innerHTML = `<p style="color: var(--color-alert-red);">Network Error loading log.</p>`;
     }
 }
-    }
-  } catch (error) {
-    console.error('Error fetching profile:', error);
-  }
 
+
+// Function to switch to the main dashboard screen
+function showMainApp(email) {
+    document.getElementById('welcome-message').textContent = `Welcome, ${email}!`;
+    document.getElementById('register-screen').classList.add('hidden');
+    document.getElementById('main-app').classList.remove('hidden');
+
+    // CRITICAL: Load the Activity Log when the app opens
+    fetchAndRenderLog(); 
+}
 
 // =================================================================
 // 2. PAGE LOAD LISTENER (MAIN CODE)
 // =================================================================
 document.addEventListener('DOMContentLoaded', () => {
-  // This variable will hold our coordinates
-  let userLocation = null; 
+    // This variable will hold our coordinates
+    let userLocation = null; 
+    
+    // --- Initial Screen Check (No /profile route needed) ---
+    const token = localStorage.getItem('amini-token');
+    if (token) {
+        // If a token exists, assume they are logged in and skip the login screen
+        // NOTE: We can't know the email without a /profile route, so we use 'User'
+        showMainApp("User"); 
+    } else {
+        document.getElementById('register-screen').classList.remove('hidden');
+    }
+    
+    // --- Registration Form ---
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); 
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const messageArea = document.getElementById('message-area');
 
-  // Check if we are already logged in on page load
-  fetchProfileData(); 
+            try {
+                const response = await fetch(`${backendUrl}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
 
-  // --- Registration Form ---
-  const registerForm = document.getElementById('register-form');
-  if (registerForm) {
-    registerForm.addEventListener('submit', async (event) => {
-      event.preventDefault(); 
-      const email = document.getElementById('register-email').value;
-      const password = document.getElementById('register-password').value;
-      const messageArea = document.getElementById('message-area');
-
-      try {
-        const response = await fetch('https://amini-app-new.onrender.com/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+                if (response.ok) {
+                    messageArea.textContent = 'Registration successful! You can now log in.';
+                    messageArea.style.color = 'var(--color-success-green)';
+                } else {
+                    messageArea.textContent = `Error: ${data.message}`;
+                    messageArea.style.color = 'var(--color-alert-red)';
+                }
+            } catch (error) {
+                messageArea.textContent = 'A network error occurred. Please try again.';
+                messageArea.style.color = 'var(--color-alert-red)';
+            }
         });
-        const data = await response.json();
+    }
 
-        if (response.ok) {
-          messageArea.textContent = 'Registration successful! You can now log in.';
-          messageArea.style.color = 'green';
-        } else {
-          messageArea.textContent = `Error: ${data.message}`;
-          messageArea.style.color = 'red';
-        }
-      } catch (error) {
-        messageArea.textContent = 'A network error occurred. Please try again.';
-        messageArea.style.color = 'red';
-      }
-    });
-  }
+    // --- Login Form ---
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const messageArea = document.getElementById('login-message-area');
 
-  // --- Login Form ---
-  const loginForm = document.getElementById('login-form');
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-      const messageArea = document.getElementById('login-message-area');
+            try {
+                const response = await fetch(`${backendUrl}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
 
-      try {
-        const response = await fetch('https://amini-app-new.onrender.com/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+                if (response.ok) {
+                    localStorage.setItem('amini-token', data.token); // Save the token
+                    messageArea.textContent = 'Login successful!';
+                    messageArea.style.color = 'var(--color-success-green)';
+                    showMainApp(email); // Show app and pass the email
+                } else {
+                    messageArea.textContent = `Error: ${data.message || 'Login failed: Invalid credentials.'}`;
+                    messageArea.style.color = 'var(--color-alert-red)';
+                }
+            } catch (error) {
+                messageArea.textContent = 'A network error occurred. Could not reach server.';
+                messageArea.style.color = 'var(--color-alert-red)';
+            }
         });
-        const data = await response.json();
+    }
 
-        if (response.ok) {
-          localStorage.setItem('amini-token', data.token); // Save the token
-          fetchProfileData(); // Fetch profile (this shows the app)
-        } else {
-          messageArea.textContent = `Error: ${data.message}`;
-          messageArea.style.color = 'red';
-        }
-      } catch (error) {
-        messageArea.textContent = 'A network error occurred. Please try again.';
-        messageArea.style.color = 'red';
-      }
-    });
-  }
+    // --- Update Location Button ---
+    const locationButton = document.getElementById('get-location-btn');
+    const locationDisplay = document.getElementById('location-display');
+    if (locationButton) {
+        locationButton.addEventListener('click', () => {
+            if ("geolocation" in navigator) {
+                locationDisplay.textContent = 'Finding your location...';
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = { // Save the coordinates
+                            lat: position.coords.latitude,
+                            long: position.coords.longitude
+                        };
+                        locationDisplay.textContent = `Location updated: ${userLocation.lat.toFixed(4)}, ${userLocation.long.toFixed(4)}`;
+                        locationDisplay.style.color = 'var(--color-success-green)';
+                    },
+                    (error) => {
+                        locationDisplay.textContent = 'Unable to get location.';
+                        locationDisplay.style.color = 'var(--color-alert-red)';
+                    }
+                );
+            } else {
+                locationDisplay.textContent = 'Geolocation is not available.';
+            }
+        });
+    }
 
-  // --- Update Location Button ---
-  const locationButton = document.getElementById('get-location-btn');
-  const locationDisplay = document.getElementById('location-display');
-  if (locationButton) {
-    locationButton.addEventListener('click', () => {
-      if ("geolocation" in navigator) {
-        locationDisplay.textContent = 'Finding your location...';
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            userLocation = { // Save the coordinates
-              lat: position.coords.latitude,
-              long: position.coords.longitude
-            };
-            locationDisplay.textContent = `Location updated: ${userLocation.lat.toFixed(4)}, ${userLocation.long.toFixed(4)}`;
-            locationDisplay.style.color = 'green';
-          },
-          (error) => {
-            locationDisplay.textContent = 'Unable to get location.';
-            locationDisplay.style.color = 'red';
-          }
-        );
-      } else {
-        locationDisplay.textContent = 'Geolocation is not available.';
-      }
-    });
-  }
+    // --- Send Secure Message Button ---
+    const sendMessageButton = document.getElementById('send-message-btn');
+    const messageInput = document.getElementById('secure-message-input');
+    const statusLog = document.getElementById('status-log');
+    if (sendMessageButton) {
+        sendMessageButton.addEventListener('click', async () => {
+            const message = messageInput.value;
+            const token = localStorage.getItem('amini-token');
 
-  // --- Send Secure Message Button ---
-  const sendMessageButton = document.getElementById('send-message-btn');
-  const messageInput = document.getElementById('secure-message-input');
-  const statusLog = document.getElementById('status-log');
-  if (sendMessageButton) {
-    sendMessageButton.addEventListener('click', async () => {
-      const message = messageInput.value;
-      const token = localStorage.getItem('amini-token');
+            if (!message) { alert('Please type a message first.'); return; }
+            if (!token) { alert('You must be logged in.'); return; }
 
-      if (!message) { alert('Please type a message first.'); return; }
-      if (!token) { alert('You must be logged in.'); return; }
+            try {
+                const response = await fetch(`${backendUrl}/api/report`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // Use the standard Authorization header
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        location: userLocation // Send the location data
+                    })
+                });
 
-      try {
-        const response = await fetch('https://amini-app-new.onrender.com/api/report', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-auth-token': token
-          },
-          body: JSON.stringify({
-            message: message,
-            location: userLocation // Send the location data
-          })
+                const data = await response.json();
+                if (response.ok) {
+                    statusLog.innerHTML += `<p>Status: ${data.message}</p>`;
+                    messageInput.value = ''; // Clear the text box
+                    // Refresh the log after sending a new report
+                    fetchAndRenderLog();
+                } else {
+                    statusLog.innerHTML += `<p>Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                statusLog.innerHTML += `<p>Network error. Could not send report.</p>`;
+            }
+        });
+    }
+    
+    // --- Form Toggle Listeners ---
+    const showRegisterLink = document.getElementById('show-register-link');
+    const showLoginLink = document.getElementById('show-login-link');
+    const loginMessage = document.getElementById('login-message-area');
+    const registerMessage = document.getElementById('message-area');
+
+    if (showRegisterLink && showLoginLink) {
+        showRegisterLink.addEventListener('click', (event) => {
+            event.preventDefault(); 
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            if(loginMessage) loginMessage.textContent = ''; 
         });
 
-        const data = await response.json();
-        if (response.ok) {
-          statusLog.innerHTML += `<p>Status: ${data.message}</p>`;
-          messageInput.value = ''; // Clear the text box
-        } else {
-          statusLog.innerHTML += `<p>Error: ${data.message}</p>`;
-        }
-      } catch (error) {
-        statusLog.innerHTML += `<p>Network error. Could not send report.</p>`;
-      }
-    });
-  }
-});
-
-// =================================================================
-// 3. AUTH TOGGLE LOGIC (Add this whole block)
-// =================================================================
-document.addEventListener('DOMContentLoaded', () => {
-  // ... your existing code (fetchProfileData call, registerForm, loginForm, etc.) ...
-  
-  // --- Form Toggle Listeners ---
-  const loginForm = document.getElementById('login-form');
-  const registerForm = document.getElementById('register-form');
-  const showRegisterLink = document.getElementById('show-register-link');
-  const showLoginLink = document.getElementById('show-login-link');
-  const loginMessage = document.getElementById('login-message-area');
-  const registerMessage = document.getElementById('message-area');
-
-
-  if (showRegisterLink && showLoginLink) {
-    showRegisterLink.addEventListener('click', (event) => {
-      event.preventDefault(); // Stop the link from jumping the page
-      loginForm.classList.add('hidden');
-      registerForm.classList.remove('hidden');
-      // Also clear any old error messages
-      if(loginMessage) loginMessage.textContent = ''; 
-    });
-
-    showLoginLink.addEventListener('click', (event) => {
-      event.preventDefault(); // Stop the link from jumping the page
-      loginForm.classList.remove('hidden');
-      registerForm.classList.add('hidden');
-      // Also clear any old error messages
-      if(registerMessage) registerMessage.textContent = '';
-    });
-  }
-
-  // ... your other existing code (locationButton, sendMessageButton, etc.) ...
+        showLoginLink.addEventListener('click', (event) => {
+            event.preventDefault(); 
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            if(registerMessage) registerMessage.textContent = '';
+        });
+    }
 });
