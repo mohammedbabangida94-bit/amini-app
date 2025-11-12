@@ -2,10 +2,7 @@
 // 1. GLOBAL FUNCTIONS
 // =================================================================
 
-// This function runs on page load and after login
-async function fetchProfileData() {
-  const token = localStorage.getItem('amini-token'); // Get the token
-  const welcomeMessage = document.getElementById('welcome-message');
+
 
   if (!token) {
     // No token found, make sure login screen is visible
@@ -89,7 +86,7 @@ async function fetchProfileData() {
   } catch (error) {
     console.error('Error fetching profile:', error);
   }
-}
+
 
 // =================================================================
 // 2. PAGE LOAD LISTENER (MAIN CODE)
