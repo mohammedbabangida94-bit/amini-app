@@ -110,7 +110,8 @@ const allowedOrigins = [
     'https://127.0.0.1:5500',
     'https://amini-frontend-client.vercel.app',
     'https://amini-app.com', 
-    'https://www.amini-app.com' 
+    'https://www.amini-app.com', 
+    'https://amini-frontend-client-8jov8es3r.vercel.app' // NOTE: I recommend adding this specific domain too
 ];
 
 app.use(cors({
