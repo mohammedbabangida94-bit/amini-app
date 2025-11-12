@@ -325,3 +325,4 @@ app.post('/api/report', authMiddleware, async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Amini app is running on http://0.0.0.0:${PORT}`);
 });
+
