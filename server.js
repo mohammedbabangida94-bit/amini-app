@@ -179,6 +179,10 @@ app.post('/register',
     body('password').isLength({ min: 6 }),
     async (req, res) => {
         try {
+            // const errors = validationResult(req); // <-- COMMENT OUT
+            // if (!errors.isEmpty()) {             // <-- COMMENT OUT
+            //     return res.status(400).json({ errors: errors.array() }); // <-- COMMENT OUT
+            // }                                   // <-- COMMENT OUT
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
@@ -215,6 +219,10 @@ app.post('/login',
     body('password').exists(),
     async (req, res) => {
         try {
+            // const errors = validationResult(req); // <-- COMMENT OUT
+            // if (!errors.isEmpty()) {             // <-- COMMENT OUT
+            //     return res.status(400).json({ errors: errors.array() }); // <-- COMMENT OUT
+            // }                                   // <-- COMMENT OUT
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
