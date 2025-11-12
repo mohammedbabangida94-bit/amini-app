@@ -229,6 +229,7 @@ app.post('/login',
             }
 
             const { email, password } = req.body;
+            // ... (rest of the login logic)
             
             // Find user in MongoDB
             const user = await User.findOne({ email });
