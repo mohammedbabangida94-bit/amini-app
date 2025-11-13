@@ -168,15 +168,18 @@ app.get('/', (req, res) => {
 });
 
 // User registration endpoint
-app.post('/register',
-    body('email').isEmail(),
-    body('password').isLength({ min: 6 }),
+app.post(
+    '/register', 
+    [
+        // Middleware 1: Email validation
+        body('email').isEmail(),
+        // Middleware 2: Password length validation
+        body('password').isLength({ min: 6 }),
+        // ... (other middleware if needed)
+    ],
     async (req, res) => {
         try {
-            // const errors = validationResult(req); // <-- COMMENT OUT
-            // if (!errors.isEmpty()) {             // <-- COMMENT OUT
-            //     return res.status(400).json({ errors: errors.array() }); // <-- COMMENT OUT
-            // }                                   // <-- COMMENT OUT
+            // **Crucial: Run the validation result check here**
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
@@ -197,6 +200,7 @@ app.post('/register',
             const newUser = new User({ email, password: hashedPassword }); 
             await newUser.save(); 
 
+            // **TODO: SIGN JWT AND RETURN TOKEN HERE for a real app**
             console.log('Registered User saved to MongoDB');
             res.status(201).json({ message: 'User registered successfully!' });
 
@@ -208,51 +212,18 @@ app.post('/register',
 );
 
 // User login endpoint
-app.post('/login',
-    body('email').isEmail(),
-    body('password').exists(),
+    app.post(
+    '/login', 
+    [
+        // Middleware 1: Email validation
+        body('email').isEmail(),
+        // Middleware 2: Password existence check
+        body('password').exists(),
+    ],
     async (req, res) => {
-        try {
-            // const errors = validationResult(req); // <-- COMMENT OUT
-            // if (!errors.isEmpty()) {             // <-- COMMENT OUT
-            //     return res.status(400).json({ errors: errors.array() }); // <-- COMMENT OUT
-            // }                                   // <-- COMMENT OUT
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-
-            const { email, password } = req.body;
-            // ... (rest of the login logic)
-            
-            // Find user in MongoDB
-            const user = await User.findOne({ email });
-            if (!user) {
-                return res.status(400).json({ message: 'Invalid credentials' });
-            }
-
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
-                return res.status(400).json({ message: 'Invalid credentials' });
-            }
-
-            const payload = { user: { email: user.email } };
-            jwt.sign(
-                payload,
-                JWT_SECRET,
-                { expiresIn: 3600 },
-                (err, token) => {
-                    if (err) throw err;
-                    res.json({ token });
-                }
-            );
-        } catch (err) {
-            console.error(err.message);
-            res.status(500).send('Server error');
-        }
+        // ... rest of your login logic (check errors, find user, compare password, sign JWT)
     }
 );
-
 // --- Protected Routes ---
 
 // NEW ROUTE: GET ACTIVITY LOG REPORTS 
@@ -274,7 +245,26 @@ app.get('/api/reports', authMiddleware, async (req, res) => {
     }
 });
 
-
+// Route to fetch user profile data
+app.get('/profile', authMiddleware, async (req, res) => {
+    try {
+        // Fetch user data based on the ID attached by the authMiddleware
+        // Assumes you have a 'User' model imported and accessible.
+        const user = await User.findById(req.user.id).select('-password'); 
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        
+        // Send a valid JSON success response
+        res.json({ message: `Profile loaded successfully.`, user: { email: user.email, id: user.id } }); 
+        // Note: I added 'id' to the response, which is often useful on the frontend.
+    } catch (err) {
+        console.error("Error fetching profile:", err.message);
+        // Ensure a valid JSON error response
+        res.status(500).json({ message: 'Server Error during profile fetch.' }); 
+    }
+});
 // User report endpoint (SOS trigger)
 app.post('/api/report', authMiddleware, async (req, res) => {
     try {
