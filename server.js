@@ -131,37 +131,31 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 4. AUTHENTICATION MIDDLEWARE
 // =================================================================
 const authMiddleware = (req, res, next) => {
-    // We are using 'Authorization: Bearer <token>' standard header from the frontend
-    const authHeader = req.header('Authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        // Fallback for x-auth-token header if client uses it
-        const token = req.header('x-auth-token');
-        if (!token) {
-            return res.status(401).json({ message: 'No token, authorization denied' });
-        }
-        
-        try {
-            const decoded = jwt.verify(token, JWT_SECRET);
-            req.user = decoded.user;
-            next(); 
-        } catch (err) {
-            return res.status(401).json({ message: 'Token is not valid' }); 'return'
-        }
-        return;
-    }
+    // 1. Get the raw token value from the 'x-auth-token' header
+    const token = req.header('x-auth-token'); 
 
-    const token = authHeader.split(' ')[1]; // Extract the token part
+    // 2. Check if a token was provided
+    if (!token) {
+        // Stop execution and respond if no token is found
+        return res.status(401).json({ message: 'No token, authorization denied' });
+    }
     
+    // 3. Verify the token
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        // Verify the token using the secret key
+        const decoded = jwt.verify(token, JWT_SECRET); // Ensure JWT.SECRET is correctly referenced
+        
+        // Attach the decoded user payload to the request object
         req.user = decoded.user;
+        
+        // Pass control to the next route handler
         next(); 
+
     } catch (err) {
-        res.status(401).json({ message: 'Token is not valid' });
+        // Respond with 401 if verification fails (e.g., token expired or invalid)
+        return res.status(401).json({ message: 'Token is not valid' });
     }
 };
-
 // =================================================================
 // 5. ROUTES
 // =================================================================
