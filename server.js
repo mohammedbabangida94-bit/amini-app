@@ -171,6 +171,10 @@ app.get('/', (req, res) => {
 app.post(
     '/register', 
     [
+        // Place all validation middleware here, e.g.:
+        // body('email').isEmail(), 
+        // body('password').isLength({ min: 6 }),
+
         // Middleware 1: Email validation
         body('email').isEmail(),
         // Middleware 2: Password length validation
@@ -179,6 +183,14 @@ app.post(
     ],
     async (req, res) => {
         try {
+            // **TEMPORARILY COMMENT OUT THE VALIDATION CHECK BLOCK**
+            // const errors = validationResult(req); 
+            // if (!errors.isEmpty()) { 
+            //     return res.status(400).json({ errors: errors.array() }); 
+            // } 
+
+            // ... rest of your registration logic (hashing, saving user)
+
             // **Crucial: Run the validation result check here**
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
