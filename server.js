@@ -253,20 +253,20 @@ app.post('/api/report', authMiddleware, async (req, res) => {
         const recipientPhoneNumber = process.env.TWILIO_RECIPIENT_NUMBER; 
 
         // CRITICAL FIX: Ensure location is at least an empty object for safe reading
-        const safeLocation = location || {}; // <--- ADD THIS LINE
+        const locationToUse = location || {}; // <--- ADD THIS LINE
        
         if (!message) {
             return res.status(400).json({ message: 'Message is required' });
         }
 
         // 1. Create and save report to MongoDB 
-        const newReport = new Report({ userEmail, message, location: safelocation || {} });
+        const newReport = new Report({ userEmail, message, location: locationToUse });
         await newReport.save(); 
         console.log(`Report from ${userEmail} saved to MongoDB.`);
 
         // --- TWILIO SMS INTEGRATION ---
         if (recipientPhoneNumber && TWILIO_PHONE_NUMBER) {
-            const alertMessage = `AMINI SOS: ${userEmail} needs help. Message: "${message}". Location: Lat ${location.lat || 'N/A'}, Long ${safelocation.long || 'N/A'}`;
+            const alertMessage = `AMINI SOS: ${userEmail} needs help. Message: "${message}". Location: Lat ${location.lat || 'N/A'}, Long ${locationToUse.long || 'N/A'}`;
             
             try {
                 await twilioClient.messages.create({
@@ -292,6 +292,7 @@ app.post('/api/report', authMiddleware, async (req, res) => {
 });
 
 // GET ACTIVITY LOG REPORTS 
+
 app.get('/api/reports', authMiddleware, async (req, res) => {
     try {
         const userEmail = req.user.email; // Extracted from the token
