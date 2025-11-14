@@ -79,14 +79,25 @@ const allowedOrigins = [
     'http://localhost:5500', // Local development
 ];
 
+// 1. STANDARD CORS MIDDLEWARE
 app.use(cors({
     origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, 
-}));
+})); // <-- NOTE: The closing parenthesis and semicolon are here!
 
+// 2. CRITICAL FIX: Explicitly handle CORS preflight for all routes
+app.options('*', cors({
+    origin: allowedOrigins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+})); 
+
+// =================================================================
 // 3d. Body Parser (MUST be before routes)
+// =================================================================
 app.use(express.json());
+// ... rest of your middleware
 
 // 3e. Static Files
 app.use(express.static(path.join(__dirname, 'public')));
