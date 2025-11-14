@@ -252,6 +252,9 @@ app.post('/api/report', authMiddleware, async (req, res) => {
         const userEmail = req.user.email;
         const recipientPhoneNumber = process.env.TWILIO_RECIPIENT_NUMBER; 
 
+        // CRITICAL FIX: Ensure location is at least an empty object for safe reading
+        const safeLocation = location || {}; // <--- ADD THIS LINE
+       
         if (!message) {
             return res.status(400).json({ message: 'Message is required' });
         }
