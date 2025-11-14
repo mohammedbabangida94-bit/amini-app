@@ -84,14 +84,8 @@ app.use(cors({
     origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, 
-})); // <-- NOTE: The closing parenthesis and semicolon are here!
-
-// 2. CRITICAL FIX: Explicitly handle CORS preflight for all routes
-app.options('*', cors({
-    origin: allowedOrigins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
 })); 
+
 
 // =================================================================
 // 3d. Body Parser (MUST be before routes)
