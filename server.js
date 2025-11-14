@@ -260,7 +260,7 @@ app.post('/api/report', authMiddleware, async (req, res) => {
         }
 
         // 1. Create and save report to MongoDB 
-        const newReport = new Report({ userEmail, message, location: location || {} });
+        const newReport = new Report({ userEmail, message, location: safelocation || {} });
         await newReport.save(); 
         console.log(`Report from ${userEmail} saved to MongoDB.`);
 
