@@ -266,7 +266,7 @@ app.post('/api/report', authMiddleware, async (req, res) => {
 
         // --- TWILIO SMS INTEGRATION ---
         if (recipientPhoneNumber && TWILIO_PHONE_NUMBER) {
-            const alertMessage = `... Location: Lat ${location.lat || 'N/A'}, Long ${safelocation.long || 'N/A'}`;
+            const alertMessage = `AMINI SOS: ${userEmail} needs help. Message: "${message}". Location: Lat ${location.lat || 'N/A'}, Long ${safelocation.long || 'N/A'}`;
             
             try {
                 await twilioClient.messages.create({
