@@ -181,7 +181,7 @@ app.post(
 app.post(
     '/login', 
     [
-        body('email', 'Please include a valid email').isEmail(),
+        body('email', 'Email field requires a valid email address.').isEmail(),
         body('password', 'Password is required').exists(),
     ],
     async (req, res) => {
