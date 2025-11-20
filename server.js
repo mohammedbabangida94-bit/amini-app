@@ -43,8 +43,16 @@ mongoose.connect(process.env.MONGO_URI, {
 const User = mongoose.model('user', new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    date: { type: Date, default: Date.now }
-}));
+    date: { type: Date, default: Date.now },
+
+    // START: NEW FIELD FOR USER-CONFIGURED CONTACTS
+    emergencyContacts: [{
+        type: String,   // Store each phone number as a string
+        trim: true,     // Remove any leading/trailing spaces
+        default: []     // Default to an empty array if the user hasn't set any
+    }],
+
+    }));
 
 const Report = mongoose.model('report', new mongoose.Schema({
     userEmail: { type: String, required: true },
