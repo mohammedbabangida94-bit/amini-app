@@ -1,4 +1,5 @@
 // Server Dependencies and Setup
+const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
