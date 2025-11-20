@@ -23,7 +23,15 @@ const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
 const MONGO_URI = process.env.DB_CONNECTION_STRING;
 
 // Initialize Twilio client
-const twilioClient = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+// Initialize Twilio client - Protected against missing ENV vars
+let twilioClient;
+if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+    twilioClient = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    console.log("Twilio client initialized.");
+} else {
+    console.warn("TWILIO SKIPPED: Missing Account SID or Auth Token. SMS reports will fail.");
+    twilioClient = null; // Set to null if initialization failed
+}
 
 // --- Database Connection ---
 // MONGO_URI is defined above as const MONGO_URI = process.env.DB_CONNECTION_STRING;
