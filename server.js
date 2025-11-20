@@ -105,7 +105,7 @@ app.use(cors({
 // =================================================================
 app.use(express.json());
 // ... rest of your middleware
-
+app.use(express.urlencoded({ extended: true })); // Good practice to include
 // 3e. Static Files
 app.use(express.static(path.join(__dirname, 'public')));
 
