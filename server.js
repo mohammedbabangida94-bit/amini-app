@@ -26,7 +26,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 // --- Database Connection ---
-mongoose.connect(MONGO_URI)
+// MODIFIED BLOCK: Use a fallback URI to prevent the "undefined" error during startup.
+mongoose.connect(MONGO_URI || 'mongodb://localhost/temp_db')
     .then(() => console.log('MongoDB connected successfully'))
     .catch(err => console.error('MongoDB connection error:', err));
 
