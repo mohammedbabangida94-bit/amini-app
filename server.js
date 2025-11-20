@@ -71,7 +71,7 @@ const Report = mongoose.model('report', new mongoose.Schema({
 // =================================================================
 
 // 3a. Security Headers (FIRST)
-app.use(helmet());
+//app.use(helmet());
 
 // 3b. Rate Limiting
 const limiter = rateLimit({
@@ -80,17 +80,17 @@ const limiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
-app.use(limiter); 
+//app.use(limiter); 
 
 // 3c. CORS Configuration (Corrected for your domains)
-const allowedOrigins = [
+//const allowedOrigins = [
     'https://amini-app-new.onrender.com', // Your backend URL
     'https://amini-frontend-client.vercel.app', // Example Vercel primary domain
     'https://amini-app.com', 
     'https://www.amini-app.com', 
     'https://amini-frontend-client-8jov8es3r.vercel.app', // Specific Vercel deployment URL
     'http://localhost:5500', // Local development
-];
+//];
 
 
 // 3c. CORS Configuration (Temporary Debug Configuration)
