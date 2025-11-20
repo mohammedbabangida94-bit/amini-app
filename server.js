@@ -20,21 +20,26 @@ app.set('trust proxy', 1); // Required for Render/proxy services for rate-limiti
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key'; // Debug: Use ENV variable
 const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER; 
+const MONGO_URI = process.env.DB_CONNECTION_STRING;
 
 // Initialize Twilio client
 const twilioClient = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-// Connect to Database
-mongoose.connect(process.env.MONGO_URI, {
+// --- Database Connection ---
+// MONGO_URI is defined above as const MONGO_URI = process.env.DB_CONNECTION_STRING;
+
+// Use MONGO_URI and the fallback for stability, keeping your connection options.
+mongoose.connect(MONGO_URI || 'mongodb://localhost/temp_db', {
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
-}) 
+})
     .then(() => {
-        console.log("MongoDB Connection Successful! 🥳(Via Env Variable)");
+        console.log("MongoDB Connection Successful! 🥳");
     })
     .catch((err) => {
+        // Log the error and exit the process if connection fails.
         console.error("MongoDB Connection Error:", err);
-        process.exit(1);
+        process.exit(1); 
     });
 
 // =================================================================
