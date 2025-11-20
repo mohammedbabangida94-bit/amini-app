@@ -92,13 +92,13 @@ const allowedOrigins = [
     'http://localhost:5500', // Local development
 ];
 
-// 1. STANDARD CORS MIDDLEWARE
+
+// 3c. CORS Configuration (Temporary Debug Configuration)
 app.use(cors({
-    origin: allowedOrigins,
+    origin: '*', // Allow ALL origins temporarily
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, 
-})); 
-
+}));
 
 // =================================================================
 // 3d. Body Parser (MUST be before routes)
