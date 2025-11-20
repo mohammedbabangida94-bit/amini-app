@@ -1,232 +1,297 @@
-// Server Dependencies and Setup
+// =================================================================
+// 1. IMPORTS
+// =================================================================
+require('dotenv').config();
+const mongoose = require('mongoose');
 const cors = require('cors');
 const express = require('express');
-const mongoose = require('mongoose');
+const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const twilio = require('twilio');
-const cookieParser = require('cookie-parser');
-require('dotenv').config(); // Ensure your environment variables load
-
+ const twilio = require('twilio'); 
+// =================================================================
+// 2. CONFIGURATION & DATABASE CONNECTION
+// =================================================================
 const app = express();
-
-// --- Configuration ---
-const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGODB_URI;
-const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
-
-// Twilio Setup
-const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
-const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
+app.set('trust proxy', 1); // Required for Render/proxy services for rate-limiting
+const PORT = process.env.PORT || 10000;
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key'; // Debug: Use ENV variable
 const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER; 
-const twilioClient = new twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
-// --- Middleware ---
-app.use(express.json());
-app.use(cookieParser());
+// Initialize Twilio client
+const twilioClient = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-// --- Database Connection ---
-// MODIFIED BLOCK: Use a fallback URI to prevent the "undefined" error during startup.
-mongoose.connect(MONGO_URI || 'mongodb://localhost/temp_db')
-    .then(() => console.log('MongoDB connected successfully'))
-    .catch(err => console.error('MongoDB connection error:', err));
+// Connect to Database
+mongoose.connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+}) 
+    .then(() => {
+        console.log("MongoDB Connection Successful! 🥳(Via Env Variable)");
+    })
+    .catch((err) => {
+        console.error("MongoDB Connection Error:", err);
+        process.exit(1);
+    });
 
-// --- Mongoose Schemas (User & Report) ---
-const UserSchema = new mongoose.Schema({
+// =================================================================
+// 2.5 MODELS
+// =================================================================
+const User = mongoose.model('user', new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     date: { type: Date, default: Date.now },
-    
-    // NEW FIELD for user-configured contacts
-    emergencyContacts: [{
-        type: String,
-        trim: true,
-        default: []
-    }],
-});
 
-const ReportSchema = new mongoose.Schema({
+    // START: NEW FIELD FOR USER-CONFIGURED CONTACTS
+    emergencyContacts: [{
+        type: String,   // Store each phone number as a string
+        trim: true,     // Remove any leading/trailing spaces
+        default: []     // Default to an empty array if the user hasn't set any
+    }],
+
+    }));
+
+const Report = mongoose.model('report', new mongoose.Schema({
     userEmail: { type: String, required: true },
     message: { type: String, required: true },
-    date: { type: Date, default: Date.now },
-    location: {
-        lat: { type: Number },
-        long: { type: Number }
-    }
+    location: { lat: Number, long: Number },
+    date: { type: Date, default: Date.now }
+}));
+    
+// =================================================================
+// 3. GLOBAL MIDDLEWARE (Order is critical!)
+// =================================================================
+
+// 3a. Security Headers (FIRST)
+app.use(helmet());
+
+// 3b. Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
 });
+app.use(limiter); 
 
-const User = mongoose.model('User', UserSchema);
-const Report = mongoose.model('Report', ReportSchema);
+// 3c. CORS Configuration (Corrected for your domains)
+const allowedOrigins = [
+    'https://amini-app-new.onrender.com', // Your backend URL
+    'https://amini-frontend-client.vercel.app', // Example Vercel primary domain
+    'https://amini-app.com', 
+    'https://www.amini-app.com', 
+    'https://amini-frontend-client-8jov8es3r.vercel.app', // Specific Vercel deployment URL
+    'http://localhost:5500', // Local development
+];
+
+// 1. STANDARD CORS MIDDLEWARE
+app.use(cors({
+    origin: allowedOrigins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, 
+})); 
 
 
-// --- Authentication Middleware ---
-const authMiddleware = (req, res, next) => {
-    const token = req.cookies.token;
-    if (!token) {
-        return res.status(401).json({ message: 'Access denied. No token provided.' });
+// =================================================================
+// 3d. Body Parser (MUST be before routes)
+// =================================================================
+app.use(express.json());
+// ... rest of your middleware
+
+// 3e. Static Files
+app.use(express.static(path.join(__dirname, 'public')));
+
+
+// =================================================================
+// 4. AUTHENTICATION MIDDLEWARE (Cleaned and debugged)
+// =================================================================
+
+    const authMiddleware = (req, res, next) => {
+    const token = req.header('x-auth-token'); 
+
+if (!token) {
+        return res.status(401).json({ message: 'No token, authorization denied' });
     }
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; // Contains { id: userId, email: userEmail }
-        next();
-    } catch (ex) {
-        res.status(400).json({ message: 'Invalid token.' });
+    
+try {
+        // Debug: Correctly using JWT_SECRET variable
+    const decoded = jwt.verify(token, JWT_SECRET); 
+    req.user = decoded.user;
+    next(); 
+
+    } catch (err) {
+     return res.status(401).json({ message: 'Token is not valid' });
     }
 };
-// Alias for ensureAuthenticated
-const ensureAuthenticated = authMiddleware;
 
+// =================================================================
+// 5. ROUTES
+// =================================================================
 
-// =========================================================================
-//                             APPLICATION ROUTES
-// =========================================================================
+// --- 5a. Public Routes ---
 
-// Root Route (for testing deployment)
-app.get('/', (req, res) => {
-    res.send('Amini App Backend Running');
+ app.get('/', (req, res) => {
+    res.send('Welcome to the Amini App API! Backend is live.');
 });
 
-// User Registration
-app.post('/api/register', async (req, res) => {
+// User registration endpoint
+app.post(
+    '/register', 
+    [
+        body('email', 'Please include a valid email').isEmail(),
+        body('password', 'Password must be 6 or more characters').isLength({ min: 6 }),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
     try {
         const { email, password } = req.body;
-        let user = await User.findOne({ email });
-        if (user) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-        
-        const salt = await bcrypt.genSalt(10);
+
+        let userExists = await User.findOne({ email }); 
+            if (userExists) {
+                return res.status(400).json({ message: 'User already exists' });
+            }
+
+        const salt = await bcrypt.genSalt(8);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        user = new User({ email, password: hashedPassword });
-        await user.save();
-        
-        // Auto-login after registration
-        const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-        res.cookie('token', token, { httpOnly: true, maxAge: 604800000 }); // 7 days
-        
-        res.status(201).json({ message: 'User registered and logged in successfully' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error during registration' });
-    }
-});
+        const newUser = new User({ email, password: hashedPassword }); 
+            await newUser.save(); 
+            
+            // Generate JWT after successful registration
+            const payload = { user: { id: newUser.id, email: newUser.email } };
 
-// User Login
-app.post('/api/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
+            jwt.sign(
+                payload,
+                JWT_SECRET,
+                { expiresIn: 360000 },
+                (err, token) => {
+                    if (err) throw err;
+                    res.status(201).json({ token, message: 'User registered successfully!' });
+                }
+            );
+
+        } catch (err) {
+            console.error(err.message);
+            // Debug: Ensure JSON error response
+            res.status(500).json({ message: 'Server Error during registration.' }); 
+        }
+    }
+);
+
+// User login endpoint (Complete Logic)
+app.post(
+    '/login', 
+    [
+        body('email', 'Email field requires a valid email address.').isEmail(),
+        body('password', 'Password is required').exists(),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        
+        try {
+            const { email, password } = req.body;
+            let user = await User.findOne({ email });
+
+            if (!user) {
+                return res.status(400).json({ message: 'Invalid Credentials' });
+            }
+
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: 'Invalid Credentials' });
+            }
+
+            // Generate JWT upon successful login
+            const payload = { user: { id: user.id, email: user.email } };
+
+            jwt.sign(
+                payload,
+                JWT_SECRET,
+                { expiresIn: 360000 },
+                (err, token) => {
+                    if (err) {
+                        // Debug: Handle JWT error gracefully
+                        return res.status(500).json({ message: 'Token creation failed.' }); 
+                    }
+                    res.json({ token });
+                }
+            );
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json({ message: 'Server Error during login.' });
+        }
+    }
+);
+
+
+// --- 5b. Protected Routes ---
+
+// Route to fetch user profile data (Debug: Added missing route)
+app.get('/profile', authMiddleware, async (req, res) => {
+try {
+        const user = await User.findById(req.user.id).select('-password'); 
+        
         if (!user) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            return res.status(404).json({ message: 'User not found.' });
         }
         
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials' });
-        }
-        
-        const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-        res.cookie('token', token, { httpOnly: true, maxAge: 604800000 }); // 7 days
-        
-        res.status(200).json({ message: 'Logged in successfully' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error during login' });
-    }
-});
-
-// New Route: Save User Emergency Contacts 
-app.post('/api/contacts', ensureAuthenticated, async (req, res) => {
-    try {
-        // NOTE: req.user.id is used if JWT payload uses 'id', req.user._id if payload uses '_id'
-        const userId = req.user.id; 
-        const { contacts } = req.body; // Expects an array of phone numbers from frontend
-
-        // 1. Validation 
-        if (!contacts || !Array.isArray(contacts) || contacts.length === 0) {
-            return res.status(400).json({ success: false, message: 'Please provide at least one emergency contact.' });
-        }
-        if (contacts.length > 3) {
-            return res.status(400).json({ success: false, message: 'You can set a maximum of 3 emergency contacts.' });
-        }
-
-        // 2. Update the user's document
-        const updatedUser = await User.findByIdAndUpdate(userId, {
-            emergencyContacts: contacts.map(c => c.trim()) // Store clean, trimmed numbers
-        }, { new: true }); 
-
-        if (!updatedUser) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
-        }
-
-        console.log(`User ${userId} successfully updated emergency contacts.`);
-        res.json({ success: true, message: 'Emergency contacts saved successfully.' });
-
-    } catch (error) {
-        console.error('Error saving contacts:', error);
-        res.status(500).json({ success: false, message: 'Server error saving contacts.' });
+        res.json({ message: `Profile loaded successfully.`, user: { id: user.id, email: user.email } }); 
+    }  catch (err) {
+        console.error("Error fetching profile:", err.message);
+res.status(500).json({ message: 'Server Error during profile fetch.' }); 
     }
 });
 
 
-// User Report Endpoint (SOS trigger) - Logic updated to prioritize user contacts
+// User report endpoint (SOS trigger)
 app.post('/api/report', authMiddleware, async (req, res) => {
     try {
         const { message, location } = req.body;
         const userEmail = req.user.email;
-        const locationToUse = location || {}; 
-        
+        const recipientPhoneNumber = process.env.TWILIO_RECIPIENT_NUMBER; 
+
+        // CRITICAL FIX: Ensure location is at least an empty object for safe reading
+        const locationToUse = location || {}; // <--- ADD THIS LINE
+       
         if (!message) {
             return res.status(400).json({ message: 'Message is required' });
         }
-        
-        // 1. Determine Recipients
-        const userProfile = await User.findOne({ email: userEmail });
-        let recipients = [];
 
-        if (userProfile && userProfile.emergencyContacts && userProfile.emergencyContacts.length > 0) {
-            // Priority 1: Use the user's personal contacts
-            recipients = userProfile.emergencyContacts;
-        } else if (process.env.TWILIO_RECIPIENT_NUMBERS) {
-            // Priority 2 (Fallback): Use the hardcoded list (e.g., office numbers)
-            recipients = process.env.TWILIO_RECIPIENT_NUMBERS.split(',').map(n => n.trim());
-        }
-
-        // 2. Create and save report to MongoDB 
+        // 1. Create and save report to MongoDB 
         const newReport = new Report({ userEmail, message, location: locationToUse });
         await newReport.save(); 
         console.log(`Report from ${userEmail} saved to MongoDB.`);
 
-        // 3. --- TWILIO SMS INTEGRATION (MULTI-RECIPIENT) ---
-        if (recipients.length > 0 && TWILIO_PHONE_NUMBER) {
-            // Construct a map link for easier access
-            const mapLink = locationToUse.lat && locationToUse.long 
-                            ? `https://maps.google.com/maps?q=${locationToUse.lat},${locationToUse.long}` 
-                            : 'Location unavailable.';
+        // --- TWILIO SMS INTEGRATION ---
+        if (recipientPhoneNumber && TWILIO_PHONE_NUMBER) {
+            const alertMessage = `AMINI SOS: ${userEmail} needs help. Message: "${message}". Location: Lat ${location.lat || 'N/A'}, Long ${locationToUse.long || 'N/A'}`;
             
-            const alertMessage = `AMINI SOS: ${userEmail} needs help. Message: "${message}". Location: ${mapLink}`;
-            
-            const smsPromises = recipients.map(number => {
-                return twilioClient.messages.create({
-                    body: alertMessage,
-                    to: number, 
-                    from: TWILIO_PHONE_NUMBER
-                });
-            });
-
             try {
-                await Promise.all(smsPromises);
-                console.log(`Twilio: Alert sent to ${recipients.length} contact(s).`);
+                await twilioClient.messages.create({
+                    body: alertMessage,
+                    to: recipientPhoneNumber, 
+                    from: TWILIO_PHONE_NUMBER 
+                });
+                console.log(`Twilio Message Sent.`);
             } catch (smsError) {
                 console.error("CRITICAL SMS SEND FAILURE (Twilio):", smsError);
             }
         } else {
-            console.warn("TWILIO SKIPPED: No recipients or Twilio number configured.");
+            console.warn("TWILIO SKIPPED: Missing TWILIO_PHONE_NUMBER or TWILIO_RECIPIENT_NUMBER environment variable.");
         }
         // --- END TWILIO SMS INTEGRATION ---
 
-        res.status(201).json({ message: 'SOS report saved and alert triggered!' });
+     res.status(201).json({ message: 'SOS report saved and alert triggered!' });
 
     } catch (err) {
         console.error("Error processing report:", err.message);
@@ -234,15 +299,15 @@ app.post('/api/report', authMiddleware, async (req, res) => {
     }
 });
 
-
 // GET ACTIVITY LOG REPORTS 
+
 app.get('/api/reports', authMiddleware, async (req, res) => {
     try {
-        const userEmail = req.user.email; 
+        const userEmail = req.user.email; // Extracted from the token
         
         const reports = await Report.find({ userEmail })
-                                   .sort({ date: -1 })
-                                   .limit(10);
+                                     .sort({ date: -1 })
+                                     .limit(10);
         
         res.status(200).json(reports);
 
@@ -253,7 +318,8 @@ app.get('/api/reports', authMiddleware, async (req, res) => {
 });
 
 
-// --- Server Initialization ---
+// =================================================================
+// 6. START THE SERVER
+// =================================================================
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+    console.log(`Amini app is running on http://0.0.0.0:${PORT}`);});
