@@ -6,9 +6,10 @@ const backendUrl = 'https://amini-app-new.onrender.com';
 // =================================================================
 
 // Function to fetch and display the Activity Log
+
 async function fetchAndRenderLog() {
     const logDisplay = document.getElementById('activity-log-display');
-    logDisplay.innerHTML = '<p style="color: #6c757d;">Fetching latest reports...</p>';
+    logDisplay.innerHTML = '<p style="color: #1a3852ff;">Fetching latest reports...</p>';
 
     try {
         const token = localStorage.getItem('amini-token'); // Use the correct key: amini-token
