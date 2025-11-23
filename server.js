@@ -11,7 +11,7 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
- const twilio = require('twilio'); 
+const Sendchamp = require('sendchamp');
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
 // =================================================================
@@ -22,15 +22,26 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key'; // Debug: 
 const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER; 
 const MONGO_URI = process.env.MONGO_URI;
 
-// Initialize Twilio client
-// Initialize Twilio client - Protected against missing ENV vars
-let twilioClient;
-if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
-    twilioClient = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    console.log("Twilio client initialized.");
-} else {
-    console.warn("TWILIO SKIPPED: Missing Account SID or Auth Token. SMS reports will fail.");
-    twilioClient = null; // Set to null if initialization failed
+// Initialize Sendchamp Client
+let sendchampClient;
+try {
+    const publicKey = process.env.SENDCHAMP_PUBLIC_KEY;
+    const baseUrl = process.env.SENDCHAMP_BASE_URL;
+
+    if (!publicKey || !baseUrl) {
+        throw new Error('Sendchamp keys (PUBLIC_KEY or BASE_URL) not configured in environment variables.');
+    }
+
+    sendchampClient = new Sendchamp({ 
+        publicKey: publicKey,
+        baseUrl: baseUrl 
+    });
+    console.log('Sendchamp Client Initialized. Ready for SMS service.');
+
+} catch (error) {
+    console.error('CRITICAL ERROR: Sendchamp Initialization Failed:', error.message);
+    // Continue running the app without SMS functionality if needed, 
+    // but log the error to alert the developer.
 }
 
 // --- Database Connection ---
@@ -271,44 +282,79 @@ app.post('/api/report', authMiddleware, async (req, res) => {
     try {
         const { message, location } = req.body;
         const userEmail = req.user.email;
-        const recipientPhoneNumber = process.env.TWILIO_RECIPIENT_NUMBER; 
-
+        
+        // --- START: Merged Logic from Your Existing Block ---
         // CRITICAL FIX: Ensure location is at least an empty object for safe reading
-        const locationToUse = location || {}; // <--- ADD THIS LINE
-       
+        const locationToUse = location || {}; 
+        
+        // This check is good if the frontend expects a 'message' field
         if (!message) {
-            return res.status(400).json({ message: 'Message is required' });
+             console.warn(`SOS Report from ${userEmail}: Missing message body.`);
         }
+        
+        // 1. Find the user and retrieve their contacts and ID (NEEDED for MongoDB and alerts)
+        // NOTE: We need to find the user BEFORE saving the report to link the user ID.
+        const user = await User.findOne({ email: userEmail });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        
+        // 2. Prepare the data for the report
+        const locationUrl = (locationToUse.latitude && locationToUse.longitude)
+            ? `https://maps.google.com/maps/search/?api=1&query=${locationToUse.latitude},${locationToUse.longitude}`
+            : 'Location data unavailable.';
 
-        // 1. Create and save report to MongoDB 
-        const newReport = new Report({ userEmail, message, location: locationToUse });
-        await newReport.save(); 
+        const newReport = new Report({
+            user: user._id, // Use user._id from the lookup
+            message: message || "No message provided.",
+            location: locationToUse,
+            locationUrl: locationUrl,
+            timestamp: new Date(),
+        });
+        await newReport.save();
         console.log(`Report from ${userEmail} saved to MongoDB.`);
+        // --- END: Merged Logic ---
 
-        // --- TWILIO SMS INTEGRATION ---
-        if (recipientPhoneNumber && TWILIO_PHONE_NUMBER) {
-            const alertMessage = `AMINI SOS: ${userEmail} needs help. Message: "${message}". Location: Lat ${location.lat || 'N/A'}, Long ${locationToUse.long || 'N/A'}`;
-            
-            try {
-                await twilioClient.messages.create({
-                    body: alertMessage,
-                    to: recipientPhoneNumber, 
-                    from: TWILIO_PHONE_NUMBER 
-                });
-                console.log(`Twilio Message Sent.`);
-            } catch (smsError) {
-                console.error("CRITICAL SMS SEND FAILURE (Twilio):", smsError);
-            }
+
+        // 3. Send SMS to all emergency contacts using Sendchamp
+        if (sendchampClient && user.emergencyContacts && user.emergencyContacts.length > 0) {
+            console.log('Attempting to send SOS alerts via Sendchamp...');
+
+            const smsPromises = user.emergencyContacts.map(async (contact) => {
+                // Ensure the number is in the correct format
+                const formattedContact = contact.startsWith('+') ? contact.substring(1) : contact;
+                
+                const messageBody = `🚨 EMERGENCY! ${user.firstName || user.email} needs help! Location: ${locationUrl}`;
+
+                try {
+                    const response = await sendchampClient.sms.send({
+                        sender_name: 'AminiApp',
+                        to: [formattedContact],
+                        message: messageBody,
+                        route: 'non_dnd' 
+                    });
+
+                    console.log(`Sendchamp SMS sent to ${contact}. Response:`, response.status);
+                    return { contact, status: 'Sent', response: response.status };
+
+                } catch (sendError) {
+                    console.error(`Sendchamp SMS FAILED for ${contact}:`, sendError.message);
+                    return { contact, status: 'Failed', error: sendError.message };
+                }
+            });
+
+            await Promise.allSettled(smsPromises); 
+        } else if (user.emergencyContacts.length === 0) {
+            console.log('SOS processed: User has no emergency contacts set up.');
         } else {
-            console.warn("TWILIO SKIPPED: Missing TWILIO_PHONE_NUMBER or TWILIO_RECIPIENT_NUMBER environment variable.");
+            console.warn('SMS functionality disabled (Sendchamp client not initialized).');
         }
-        // --- END TWILIO SMS INTEGRATION ---
 
-     res.status(201).json({ message: 'SOS report saved and alert triggered!' });
+        res.status(200).json({ message: 'SOS report saved and alerts processed.', locationUrl });
 
-    } catch (err) {
-        console.error("Error processing report:", err.message);
-        res.status(500).json({ message: 'Server Error' });
+    } catch (error) {
+        console.error('SOS Report Error:', error.message);
+        res.status(500).json({ message: 'Failed to process SOS report.', error: error.message });
     }
 });
 
