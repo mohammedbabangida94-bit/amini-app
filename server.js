@@ -19,7 +19,7 @@ const app = express();
 app.set('trust proxy', 1); // Required for Render/proxy services for rate-limiting
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key'; // Debug: Use ENV variable
-const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER; 
+//const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER; 
 const MONGO_URI = process.env.MONGO_URI;
 
 // Initialize Sendchamp Client
