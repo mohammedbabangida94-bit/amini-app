@@ -3,8 +3,8 @@
 // =================================================================
 require('dotenv').config();
 const mongoose = require('mongoose');
-const cors = require('cors');
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
