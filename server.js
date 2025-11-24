@@ -35,7 +35,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Good practice to include
 
 // Initialize Sendchamp Client
-let sendchampClient;
+let sendchampClient = null;
+// The Sendchamp client is not initialized to bypass the CRITICAL ERROR.
+// This allows the rest of the application (login, register) to function.
 try {
     const publicKey = process.env.SENDCHAMP_PUBLIC_KEY;
     const baseUrl = process.env.SENDCHAMP_BASE_URL;
