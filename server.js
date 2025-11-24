@@ -11,11 +11,7 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-//const { default: Sendchamp } = require('sendchamp');
 const SendchampPackage = require('sendchamp');
-// We assume the constructor is the main export of the package, 
-// but assign it to a simple variable name for use with 'new'
-const Sendchamp = SendchampPackage;
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
 // =================================================================
