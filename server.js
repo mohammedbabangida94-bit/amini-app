@@ -22,6 +22,13 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key'; // Debug: 
 
 const MONGO_URI = process.env.MONGO_URI;
 
+// 3c. CORS Configuration (Temporary Debug Configuration)
+app.use(cors({
+    origin: '*', // Allow ALL origins temporarily
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, 
+}));
+
 // Initialize Sendchamp Client
 let sendchampClient;
 try {
@@ -112,12 +119,8 @@ const limiter = rateLimit({
 //];
 
 
-// 3c. CORS Configuration (Temporary Debug Configuration)
-app.use(cors({
-    origin: '*', // Allow ALL origins temporarily
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, 
-}));
+
+
 
 // =================================================================
 // 3d. Body Parser (MUST be before routes)
