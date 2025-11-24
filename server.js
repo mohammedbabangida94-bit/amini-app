@@ -314,6 +314,7 @@ app.post('/api/report', authMiddleware, async (req, res) => {
             : 'Location data unavailable.';
 
         const newReport = new Report({
+            userEmail: userEmail,
             user: user._id, // Use user._id from the lookup
             message: message || "No message provided.",
             location: locationToUse,
