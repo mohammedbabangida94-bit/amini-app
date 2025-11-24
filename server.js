@@ -10,7 +10,12 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
+// const { default: Sendchamp } = require('sendchamp'); 
+// const Sendchamp = require('sendchamp').default; 
+// ...
 const jwt = require('jsonwebtoken');
+// Temporarily comment out the failing import:
+// const Sendchamp = require('sendchamp');
 const Sendchamp = require('sendchamp').default; // Accesses the default export
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
