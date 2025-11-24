@@ -10,13 +10,14 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 // const { default: Sendchamp } = require('sendchamp'); 
 // const Sendchamp = require('sendchamp').default; 
 // ...
-const jwt = require('jsonwebtoken');
+//const Sendchamp = require('sendchamp').default; // Accesses the default export
 // Temporarily comment out the failing import:
 // const Sendchamp = require('sendchamp');
-const Sendchamp = require('sendchamp').default; // Accesses the default export
+
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
 // =================================================================
@@ -41,7 +42,7 @@ app.use(express.urlencoded({ extended: true })); // Good practice to include
 
 // Initialize Sendchamp Client
 let sendchampClient = null;
-// The Sendchamp client is not initialized to bypass the CRITICAL ERROR.
+/*// The Sendchamp client is not initialized to bypass the CRITICAL ERROR.
 // This allows the rest of the application (login, register) to function.
 try {
     const publicKey = process.env.SENDCHAMP_PUBLIC_KEY;
@@ -59,10 +60,11 @@ try {
 
 } catch (error) {
     console.error('CRITICAL ERROR: Sendchamp Initialization Failed:', error.message);
+    
     // Continue running the app without SMS functionality if needed, 
     // but log the error to alert the developer.
 }
-
+*/
 // --- Database Connection ---
 // MONGO_URI is defined above as const MONGO_URI = process.env.DB_CONNECTION_STRING;
 
