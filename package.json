@@ -14,7 +14,6 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
     "request": "^2.88.2",
-    "sendchamp": "^1.0.8",
     "twilio": "^5.10.4"
   }
 }
