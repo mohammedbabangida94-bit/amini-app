@@ -11,7 +11,7 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const SendchampPackage = require('sendchamp');
+const Sendchamp = require('sendchamp').default; // Accesses the default export
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
 // =================================================================
