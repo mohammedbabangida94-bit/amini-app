@@ -19,15 +19,20 @@ const app = express();
 app.set('trust proxy', 1); // Required for Render/proxy services for rate-limiting
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key'; // Debug: Use ENV variable
-
 const MONGO_URI = process.env.MONGO_URI;
 
-// 3c. CORS Configuration (Temporary Debug Configuration)
+// 3a. CORS Configuration (Allows cross-origin requests)
 app.use(cors({
     origin: '*', // Allow ALL origins temporarily
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, 
 }));
+
+// =================================================================
+// 3b. Body Parser (MUST be before routes)
+// =================================================================
+app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Good practice to include
 
 // Initialize Sendchamp Client
 let sendchampClient;
@@ -120,14 +125,6 @@ const limiter = rateLimit({
 
 
 
-
-
-// =================================================================
-// 3d. Body Parser (MUST be before routes)
-// =================================================================
-app.use(express.json());
-// ... rest of your middleware
-app.use(express.urlencoded({ extended: true })); // Good practice to include
 // 3e. Static Files
 app.use(express.static(path.join(__dirname, 'public')));
 
