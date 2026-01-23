@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amini - Personal Security App</title>
+    <link rel="stylesheet" href="style.css">
+
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png">
+    
+    <link rel="manifest" href="/manifest.json">
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+    
+    <meta name="theme-color" content="#232938">
+    
+    <title>Amini App | Secure SOS Alerts</title>
+    
+  </head>
+
+ <body>
+    
+
+  <div class="app-container">
+    <div class="app-branding">
+        <h1>Amini- Personal Security App</h1>
+        <p>Your secure peace of mind.</p>
+    </div>
+
+    <section id="register-screen">
+        
+        <form id="login-form">
+            <h2>Login to Amini</h2>
+            <div>
+                <label for="login-email">Email</label><br>
+                <input type="email" id="login-email" required>
+            </div>
+            <div>
+                <label for="login-password">Password</label><br>
+                <input type="password" id="login-password" required>
+            </div>
+            <button type="submit">Login</button>
+            <p id="login-message-area"></p>
+            <p>
+                Need an account? 
+                <a href="#" id="show-register-link">Sign Up</a> 
+            </p>
+        </form>
+        
+        <form id="register-form" class="hidden">
+            <h2>Register for Amini</h2>
+            <p>Create your account to get started.</p>
+            <div>
+                <label for="register-email">Email</label>
+                <input type="email" id="register-email" required>
+            </div>
+            
+            <div class="input-container">
+                <label for="passwordInput">Password</label>
+                <div style="position: relative;">
+                    <input type="password" id="passwordInput" name="password" placeholder="Enter your password" required>
+                    <button type="button" id="passwordToggle" 
+                        style="position: absolute; top: 50%; right: 5px; transform: translateY(-50%); border: none; background: transparent; cursor: pointer;">
+                        <span id="toggleIcon">👁️</span>
+                    </button>
+                </div>
+            </div>
+            <button type="submit">Register</button>
+            <p id="message-area"></p>
+            <p>
+                Already have an account? 
+                <a href="#" id="show-login-link">Log In</a>
+            </p>
+        </form>
+        
+    </section> 
+    <section id="main-app" class="hidden">
+        
+        <h2 id="welcome-message">Welcome!</h2>
+        <button id="logout-btn">Logout</button>
+        
+        <hr>
+        
+      <main>
+        <div class="feature-card sos-card">
+          <h3>Emergency Alert</h3>
+          <button id="sos-btn">SOS</button>
+          <p>Press and hold for 3 seconds</p>
+        </div>
+        
+        <div class="feature-card">
+          <h3>Your Location</h3>
+          <p id="location-display">Location will appear here...</p>
+          <button id="get-location-btn">Update Location</button>
+        </div>
+        
+        <div class="feature-card">
+          <h3>Emergency Contacts</h3>
+          <ul id="contact-list">
+            <li>Police (911)</li>
+            <li>Ambulance (112)</li>
+          </ul>
+          <div class="input-group">
+            <input type="text" id="contact-input" placeholder="Add contact (e.g., Mom)">
+            <button id="add-contact-btn">Add</button>
+          </div>
+        </div>
+        <h3>Secure Communication</h3>
+        <div id="secure-message-section">
+        <input type="text" id="secure-message-input" placeholder="Type a secure message...">"
+        <button id="send-message-btn" class="sos-button">Send Secure Message</button>
+        <p id="status-log"></p>
+      </div>
+        <h3>Activity Log</h3>
+        <div id="activity-log">
+            </div>
+
+    </section>
+    
+          <div id="status-log"></div>
+            <p>App initialized.</p>
+          </div>
+      
+
+      </main>
+    </div> </div> <script type="module" src="app.js?v=20251112"></script>
+  
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+    
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjvB1r3suvV6ydyfuYRyoa7-duBBnXhRI",
+      authDomain: "amini-app-2c4d1.firebaseapp.com",
+      projectId: "amini-app-2c4d1",
+      storageBucket: "amini-app-2c4d1.firebasestorage.app",
+      messagingSenderId: "1909236769",
+      appId: "1:1909236769:web:f6896d2b2cc26a55a62f60",
+      measurementId: "G-HHVWFE7JY1"
+    };
+    
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+    // Place this JavaScript code in your frontend logic file
+
+    
+    if (passwordToggle && passwordInput && toggleIcon) {
+        passwordToggle.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            
+            // Toggle the type
+            if (isPassword) {
+                passwordInput.type = 'text';
+                toggleIcon.textContent = '🙈'; // Change icon to 'hidden'
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.textContent = '👁️'; // Change icon to 'visible'
+            }
+        });
+    }
+  </script>
+</body>
+
+</html>

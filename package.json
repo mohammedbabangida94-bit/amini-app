@@ -1,0 +1,21 @@
+{
+  "scripts": {
+    "start": "node server.js",
+    "build": "npm install" 
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.0",
+    "express-validator": "^7.3.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.2",
+    "request": "^2.88.2",
+    "sendchamp-sdk": "^1.1.0"
+  }
+}

@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+/* Define the color variables for easy management */
+:root {
+    --color-primary-blue: #004488;
+    --color-alert-red: #D93025;
+    --color-background-light: #F8F9FA;
+    --color-text-dark: #333;
+    --color-white: #FFFFFF;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--color-background-light); /* Light background for contrast */
+    color: var(--color-text-dark);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 400px; /* Standard mobile app width */
+    background-color: var(--color-white);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    box-sizing: border-box;
+}
+
+.app-branding {
+    text-align: center;
+    margin-bottom: 25px;
+    color: var(--color-primary-blue);
+}
+
+.app-branding h1 {
+    font-size: 1.8rem;
+    font-weight: 700; /* Bold */
+    margin-bottom: 5px;
+}
+
+.app-branding p {
+    font-size: 0.9rem;
+    color: #6c757d; /* Soft gray tagline */
+}
+
+/* General Input and Button Styling */
+input[type="email"],
+input[type="password"],
+input[type="text"],
+button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+    border: 1px solid #ced4da;
+    transition: border-color 0.2s;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus {
+    border-color: var(--color-primary-blue);
+    outline: none;
+}
+
+/* Primary Action Buttons (Login/Register) */
+button:not(#sos-button) {
+    background-color: var(--color-primary-blue);
+    color: var(--color-white);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+button:not(#sos-button):hover {
+    background-color: #0056b3; /* Slightly darker blue on hover */
+    transform: translateY(-1px);
+}
+
+/* Style for the screens that hold the forms/content */
+#register-screen, #main-app {
+    padding-top: 20px; /* Add some space below the branding */
+}
+
+/* SOS Button - Must be visually striking and centered */
+#sos-button {
+    /* Make it a large, centered circle */
+    width: 180px; 
+    height: 180px; 
+    border-radius: 50%; /* Perfect circle */
+    background-color: var(--color-alert-red); 
+    color: var(--color-white);
+    border: 10px solid rgba(217, 48, 37, 0.4); /* Outer ring for visual depth */
+    font-size: 1.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 30px auto; /* Center the button */
+    display: block; /* Ensure margin: auto works */
+    box-shadow: 0 0 20px rgba(217, 48, 37, 0.7); /* Glow effect */
+    transition: background-color 0.15s, transform 0.1s;
+    /* Optional: Use flex to perfectly center text */
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+}
+
+#sos-button:active {
+    background-color: #a02018; /* Darker red when pressed */
+    transform: scale(0.98);
+}
+
