@@ -1,0 +1,27 @@
+{
+  "name": "Amini Security App",
+  "short_name": "Amini",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#232938",
+  "theme_color": "#FF4500",
+  "description": "Secure, immediate SOS alerts for field operatives.",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
