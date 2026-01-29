@@ -134,8 +134,17 @@ const limiter = rateLimit({
 
 
 
-// 3e. Static Files
-app.use(express.static(path.join(__dirname, 'public')));
+// =================================================================
+// 3e. STATIC FILES & FRONTEND
+// =================================================================
+
+// Tell Express to serve files (CSS, JS, Images) from the root folder
+app.use(express.static(__dirname));
+
+// Serve the index.html file when someone visits the main domain
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 
 // =================================================================
@@ -164,10 +173,23 @@ try {
 // 5. ROUTES
 // =================================================================
 
-// --- 5a. Public Routes ---
+// =================================================================
+// 5a. FRONTEND & PUBLIC ROUTES
+// =================================================================
 
- app.get('/', (req, res) => {
-    res.send('Welcome to the Amini App API! Backend is live.');
+// 1. SERVE STATIC FILES (CSS, JS, Images)
+// This ensures your styles load correctly from the root amini-app folder
+app.use(express.static(__dirname));
+
+// 2. SERVE THE MAIN UX
+// This MUST be the first route so users see the website immediately
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// 3. HEALTH CHECK (Optional, but good for Render logs)
+app.get('/status', (req, res) => {
+    res.json({ status: 'Live', database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected' });
 });
 
 // User registration endpoint
