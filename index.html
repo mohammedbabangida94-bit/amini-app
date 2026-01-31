@@ -120,8 +120,15 @@
         </main>
 
   <script type="module">
-    // ==========================================
-// 1. PASSWORD TOGGLE (Keep your original feature)
+// ==========================================
+// 0. DEBUG HEARTBEATS
+// ==========================================
+console.log("Amini Script Loaded!");
+console.log("Login Form Found:", !!document.getElementById('login-form'));
+console.log("Register Form Found:", !!document.getElementById('register-form'));
+
+// ==========================================
+// 1. PASSWORD TOGGLE
 // ==========================================
 const passwordToggle = document.getElementById('passwordToggle');
 const passwordInput = document.getElementById('passwordInput');
@@ -143,27 +150,27 @@ const registerContainer = document.getElementById('register-container');
 const showRegisterLink = document.getElementById('show-register-link');
 const showLoginLink = document.getElementById('show-login-link');
 
-if (showRegisterLink) {
+if (showRegisterLink && loginContainer && registerContainer) {
     showRegisterLink.addEventListener('click', (e) => {
         e.preventDefault();
+        console.log("Switching to Register...");
         loginContainer.style.display = 'none';
         registerContainer.style.display = 'block';
     });
 }
 
-if (showLoginLink) {
+if (showLoginLink && loginContainer && registerContainer) {
     showLoginLink.addEventListener('click', (e) => {
         e.preventDefault();
+        console.log("Switching to Login...");
         registerContainer.style.display = 'none';
         loginContainer.style.display = 'block';
     });
 }
 
 // ==========================================
-// 3. LOGIN & REGISTER (Render API Connection)
+// 3. AUTH LOGIC (API Calls)
 // ==========================================
-
-// Handle Login
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -181,42 +188,15 @@ if (loginForm) {
             const data = await response.json();
             if (response.ok) {
                 localStorage.setItem('token', data.token);
-                messageArea.style.color = "green";
-                messageArea.textContent = "Login Successful!";
-                setTimeout(() => window.location.href = '/dashboard.html', 1200);
+                messageArea.textContent = "Success! Redirecting...";
+                setTimeout(() => window.location.href = '/dashboard.html', 1000);
             } else {
-                messageArea.style.color = "red";
-                messageArea.textContent = data.message;
+                messageArea.textContent = data.message || "Login failed";
             }
-        } catch (err) { messageArea.textContent = "Server connection error."; }
-    });
-}
-
-// Handle Register
-const registerForm = document.getElementById('register-form');
-if (registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('register-email').value;
-        const password = document.getElementById('passwordInput').value;
-        const messageArea = document.getElementById('message-area');
-
-        try {
-            const response = await fetch('/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await response.json();
-            if (response.ok) {
-                messageArea.style.color = "green";
-                messageArea.textContent = "Registration Successful!";
-                setTimeout(() => showLoginLink.click(), 2000);
-            } else {
-                messageArea.style.color = "red";
-                messageArea.textContent = data.message;
-            }
-        } catch (err) { messageArea.textContent = "Database connection error."; }
+        } catch (err) {
+            console.error(err);
+            messageArea.textContent = "Server error.";
+        }
     });
 }
   </script>
