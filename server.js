@@ -105,6 +105,26 @@ const Report = mongoose.model('report', new mongoose.Schema({
     location: { lat: Number, long: Number },
     date: { type: Date, default: Date.now }
 }));
+
+app.post('/api/alerts', async (req, res) => {
+    try {
+        const { latitude, longitude } = req.body;
+        
+        // This saves the SOS to your database forever
+        const newAlert = new Alert({
+            latitude,
+            longitude,
+            // If you have user info in the request, add it here
+        });
+
+        await newAlert.save();
+        
+        console.log("✅ SOS Saved to Database");
+        res.status(200).json({ message: "Alert saved!" });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to save alert" });
+    }
+});
     
 // =================================================================
 // 3. GLOBAL MIDDLEWARE (Order is critical!)
@@ -312,24 +332,27 @@ res.status(500).json({ message: 'Server Error during profile fetch.' });
 // ==========================================
 app.post('/api/alerts', async (req, res) => {
     try {
-        // 1. Get the data sent from the frontend
-        const { latitude, longitude, timestamp } = req.body;
+        const { latitude, longitude } = req.body;
         
-        // 2. (Optional) Get the user info from the Token
-        // For now, we will just log it to the console to prove it works
-        console.log(`🚨 SOS RECEIVED! 🚨`);
-        console.log(`Location: ${latitude}, ${longitude}`);
-        console.log(`Time: ${timestamp}`);
+        // 1. Log it so you can see it instantly on Render
+        console.log(`🚨 SOS RECEIVED! Lat: ${latitude}, Lon: ${longitude}`);
 
-        // 3. Save to Database (Example logic)
-        // const newAlert = await Alert.create({ latitude, longitude, user: req.user.id });
+        // 2. Save it to MongoDB
+        const newAlert = new Alert({
+            latitude,
+            longitude,
+            timestamp: new Date() // Records exactly when it hit the server
+        });
 
-        // 4. Send success back to the phone/browser
-        res.status(200).json({ message: "Alert received and broadcasted!" });
+        await newAlert.save();
+        
+        console.log("✅ SOS Saved to Database successfully.");
 
+        // 3. Respond to the frontend
+        res.status(200).json({ message: "Alert saved and logged!" });
     } catch (err) {
-        console.error("Server failed to process SOS:", err);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("❌ Database Error:", err);
+        res.status(500).json({ error: "Failed to save alert to database" });
     }
 });
 
