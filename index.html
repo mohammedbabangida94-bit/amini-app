@@ -121,39 +121,37 @@
 
   <script type="module">
 // ==========================================
-// 0. DEBUG HEARTBEATS
+// 1. DEBUG & INITIALIZATION
 // ==========================================
-console.log("Amini Script Loaded!");
-console.log("Login Form Found:", !!document.getElementById('login-form'));
-console.log("Register Form Found:", !!document.getElementById('register-form'));
+console.log("Amini Master Script Active");
 
-// ==========================================
-// 1. PASSWORD TOGGLE
-// ==========================================
-const passwordToggle = document.getElementById('passwordToggle');
-const passwordInput = document.getElementById('passwordInput');
-const toggleIcon = document.getElementById('toggleIcon');
-
-if (passwordToggle && passwordInput && toggleIcon) {
-    passwordToggle.addEventListener('click', () => {
-        const isPassword = passwordInput.type === 'password';
-        passwordInput.type = isPassword ? 'text' : 'password';
-        toggleIcon.textContent = isPassword ? '🙈' : '👁️';
-    });
-}
-
-// ==========================================
-// 2. FORM SWITCHING (Toggle Logic)
-// ==========================================
 const loginContainer = document.getElementById('login-container');
 const registerContainer = document.getElementById('register-container');
 const showRegisterLink = document.getElementById('show-register-link');
 const showLoginLink = document.getElementById('show-login-link');
 
+// ==========================================
+// 2. PASSWORD TOGGLE LOGIC
+// ==========================================
+const passwordToggle = document.getElementById('passwordToggle');
+const passwordInput = document.getElementById('passwordInput');
+const toggleIcon = document.getElementById('toggleIcon');
+
+if (passwordToggle && passwordInput) {
+    passwordToggle.addEventListener('click', (e) => {
+        e.preventDefault(); // Extra safety
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        if (toggleIcon) toggleIcon.textContent = isPassword ? '🙈' : '👁️';
+    });
+}
+
+// ==========================================
+// 3. SCREEN SWITCHING (TOGGLE)
+// ==========================================
 if (showRegisterLink && loginContainer && registerContainer) {
     showRegisterLink.addEventListener('click', (e) => {
         e.preventDefault();
-        console.log("Switching to Register...");
         loginContainer.style.display = 'none';
         registerContainer.style.display = 'block';
     });
@@ -162,14 +160,13 @@ if (showRegisterLink && loginContainer && registerContainer) {
 if (showLoginLink && loginContainer && registerContainer) {
     showLoginLink.addEventListener('click', (e) => {
         e.preventDefault();
-        console.log("Switching to Login...");
         registerContainer.style.display = 'none';
         loginContainer.style.display = 'block';
     });
 }
 
 // ==========================================
-// 3. AUTH LOGIC (API Calls)
+// 4. LOGIN LOGIC
 // ==========================================
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
@@ -188,14 +185,47 @@ if (loginForm) {
             const data = await response.json();
             if (response.ok) {
                 localStorage.setItem('token', data.token);
-                messageArea.textContent = "Success! Redirecting...";
-                setTimeout(() => window.location.href = '/dashboard.html', 1000);
+                messageArea.style.color = "green";
+                messageArea.textContent = "Login successful! Redirecting...";
+                setTimeout(() => window.location.href = '/dashboard.html', 1500);
             } else {
-                messageArea.textContent = data.message || "Login failed";
+                messageArea.style.color = "red";
+                messageArea.textContent = data.message || "Invalid credentials";
             }
         } catch (err) {
-            console.error(err);
-            messageArea.textContent = "Server error.";
+            messageArea.textContent = "Server error. Check connection.";
+        }
+    });
+}
+
+// ==========================================
+// 5. REGISTER LOGIC
+// ==========================================
+const registerForm = document.getElementById('register-form');
+if (registerForm) {
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('passwordInput').value;
+        const messageArea = document.getElementById('message-area');
+
+        try {
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                messageArea.style.color = "green";
+                messageArea.textContent = "Account created! Switching to login...";
+                setTimeout(() => showLoginLink.click(), 2000);
+            } else {
+                messageArea.style.color = "red";
+                messageArea.textContent = data.message || "Registration failed";
+            }
+        } catch (err) {
+            messageArea.textContent = "Database connection error.";
         }
     });
 }
