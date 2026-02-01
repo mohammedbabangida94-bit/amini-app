@@ -124,6 +124,17 @@
             <p id="message-area"></p>
             <p>Already have an account? <a href="#" id="show-login-link">Log In</a></p>
         </form> </div> </section>
+
+        </section> <section id="main-app" class="hidden" style="display: none;">
+        <div class="app-container">
+            <h2 id="welcome-message">Welcome!</h2>
+            <p>Your Secure SOS Dashboard is ready.</p>
+            <button id="logout-btn">Logout</button>
+        </div>
+    </section>
+
+    <hr>
+
       <main>
         <div class="feature-card sos-card">
           <h3>Emergency Alert</h3>
@@ -215,12 +226,14 @@ if (showLoginLink && loginContainer && registerContainer) {
 }
 
 // ==========================================
-// 4. LOGIN LOGIC
+// 4. LOGIN LOGIC (CORRECTED)
 // ==========================================
 const loginForm = document.getElementById('login-form');
+
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         const messageArea = document.getElementById('login-message-area');
@@ -231,22 +244,49 @@ if (loginForm) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
+
             const data = await response.json();
+
             if (response.ok) {
+                // Store the security token
                 localStorage.setItem('token', data.token);
+
                 messageArea.style.color = "green";
-                messageArea.textContent = "Login successful! Redirecting...";
-                setTimeout(() => window.location.href = '/dashboard.html', 1500);
+                messageArea.textContent = "Login successful! Loading dashboard...";
+
+                // Wait 1.5 seconds so the user can see the success message
+                setTimeout(() => {
+                    // 1. Hide the entire authentication section
+                    const authScreens = document.getElementById('auth-screens');
+                    if (authScreens) {
+                        authScreens.style.setProperty('display', 'none', 'important');
+                    }
+
+                    // 2. Show the Main App section
+                    const mainApp = document.getElementById('main-app');
+                    if (mainApp) {
+                        mainApp.classList.remove('hidden');
+                        mainApp.style.setProperty('display', 'block', 'important');
+                    }
+
+                    // 3. Update the welcome message with the user's email
+                    const welcomeMsg = document.getElementById('welcome-message');
+                    if (welcomeMsg) {
+                        welcomeMsg.textContent = `Welcome, ${email}!`;
+                    }
+                }, 1500);
+
             } else {
                 messageArea.style.color = "red";
                 messageArea.textContent = data.message || "Invalid credentials";
             }
         } catch (err) {
+            console.error("Login error:", err);
+            messageArea.style.color = "red";
             messageArea.textContent = "Server error. Check connection.";
         }
     });
 }
-
 // ==========================================
 // 5. REGISTER LOGIC
 // ==========================================
@@ -262,7 +302,10 @@ if (registerForm) {
             const response = await fetch('/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+               body: JSON.stringify({ 
+                    email: email.trim(), 
+                    password: password 
+                })
             });
             const data = await response.json();
             if (response.ok) {
@@ -271,11 +314,25 @@ if (registerForm) {
                 setTimeout(() => showLoginLink.click(), 2000);
             } else {
                 messageArea.style.color = "red";
+                
                 messageArea.textContent = data.message || "Registration failed";
             }
         } catch (err) {
             messageArea.textContent = "Database connection error.";
         }
+    });
+}
+
+// ==========================================
+// 6. LOGOUT LOGIC
+// ==========================================
+const logoutBtn = document.getElementById('logout-btn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        // Clear the token from storage
+        localStorage.removeItem('token');
+        // Refresh the page to show the login screen again
+        window.location.reload();
     });
 }
   </script>
