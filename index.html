@@ -46,11 +46,19 @@
     .app-branding h1, .app-branding img {
         pointer-events: auto;
     }
-</style>
-    </style>
-    
-  </head>
 
+    #passwordToggle {
+    width: 40px !important;   /* Limits the monkey icon's width */
+    height: 40px !important;  /* Limits the monkey icon's height */
+    pointer-events: auto !important;
+    }
+
+    #passwordInput {
+    padding-right: 50px !important; /* Forces text and mouse-clicks to stay left of the monkey */
+    }
+</style>
+    </style>  
+  </head>
  <body>
     
 
@@ -89,15 +97,16 @@
                     <input type="email" id="register-email" required>
                 </div>
                 
-                <div class="input-container">
-                    <label for="passwordInput">Password</label>
-                    <div style="position: relative;">
-                        <input type="password" id="passwordInput" placeholder="Create Password" required
-                        style="width: 100%; padding-right: 40px;"><button type="button" id="passwordToggle" style="position: absolute; top: 50%; right: 5px; transform: translateY(-50%); border: none; background: transparent; cursor: pointer;">
-                            <span id="toggleIcon">👁️</span>
-                        </button>
-                    </div>
+                <div class="input-group" style="position: relative;">
+                    <input type="password" id="passwordInput" placeholder="Create Password" required 
+                        style="width: 100%; padding-right: 45px; box-sizing: border-box;">
+    
+                    <button type="button" id="passwordToggle" 
+                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 30px; border: none; background: transparent; cursor: pointer; z-index: 1001;">
+                       <span id="toggleIcon">👁️</span>
+                    </button>
                 </div>
+            </div>
                 <button type="submit">Register</button>
                 <p id="message-area"></p>
                 <p>Already have an account? <a href="#" id="show-login-link">Log In</a></p>
