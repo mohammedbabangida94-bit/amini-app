@@ -56,6 +56,13 @@
     #passwordInput {
     padding-right: 50px !important; /* Forces text and mouse-clicks to stay left of the monkey */
     }
+    #register-container {
+    display: none; /* This hides the register form on page load */
+    }
+
+    #login-container {
+    display: block; /* This ensures the login form is the first thing seen */
+    }
 </style>
     </style>  
   </head>
@@ -69,58 +76,44 @@
     </div>
 
     <section id="auth-screens">
-        <div id="login-container">
-            <form id="login-form">
-                </form>
-                <h2>Login to Amini</h2>
-                <div>
-                    <label for="login-email">Email</label><br>
-                    <input type="email" id="login-email" required>
-                </div>
-                <div>
-                    <label for="login-password">Password</label><br>
-                    <input type="password" id="login-password" required>
-                </div>
-                <button type="submit">Login</button>
-                <p id="login-message-area"></p>
-                <p>Need an account? <a href="#" id="show-register-link">Sign Up</a></p>
-            </form>
-        </div>
-
-        <div id="register-container" style="display: none;">
-            <form id="register-form">
-                </form>
-                <h2>Register for Amini</h2>
-                <p>Create your account to get started.</p>
-                <div>
-                    <label for="register-email">Email</label><br>
-                    <input type="email" id="register-email" required>
-                </div>
-                
-                <div class="input-group" style="position: relative;">
-                    <input type="password" id="passwordInput" placeholder="Create Password" required 
-                        style="width: 100%; padding-right: 45px; box-sizing: border-box;">
-    
-                    <button type="button" id="passwordToggle" 
-                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 30px; border: none; background: transparent; cursor: pointer; z-index: 1001;">
-                       <span id="toggleIcon">👁️</span>
-                    </button>
-                </div>
+    <div id="login-container">
+        <h2>Login to Amini</h2>
+        <form id="login-form"> <div>
+                <label for="login-email">Email</label><br>
+                <input type="email" id="login-email" required>
             </div>
-                <button type="submit">Register</button>
-                <p id="message-area"></p>
-                <p>Already have an account? <a href="#" id="show-login-link">Log In</a></p>
-            </form>
-        </div>
-        
-    </section> 
-    <section id="main-app" class="hidden">
-        
-        <h2 id="welcome-message">Welcome!</h2>
-        <button id="logout-btn">Logout</button>
-        
-        <hr>
-        
+            <div>
+                <label for="login-password">Password</label><br>
+                <input type="password" id="login-password" required>
+            </div>
+            <button type="submit">Login</button>
+            <p id="login-message-area"></p>
+            <p>Need an account? <a href="#" id="show-register-link">Sign Up</a></p>
+        </form> </div>
+
+    <div id="register-container" style="display: none;">
+        <h2>Register for Amini</h2>
+        <p>Create your account to get started.</p>
+        <form id="register-form"> <div>
+                <label for="register-email">Email</label><br>
+                <input type="email" id="register-email" required>
+            </div>
+            
+            <div class="input-group" style="position: relative; margin-top: 10px;">
+                <label for="passwordInput">Password</label><br>
+                <input type="password" id="passwordInput" placeholder="Create Password" required 
+                    style="width: 100%; padding-right: 45px; box-sizing: border-box; height: 40px;">
+                <button type="button" id="passwordToggle" 
+                        style="position: absolute; right: 10px; bottom: 5px; width: 30px; border: none; background: transparent; cursor: pointer; z-index: 1001;">
+                   <span id="toggleIcon">👁️</span>
+                </button>
+            </div>
+            
+            <button type="submit" style="margin-top: 20px;">Register</button>
+            <p id="message-area"></p>
+            <p>Already have an account? <a href="#" id="show-login-link">Log In</a></p>
+        </form> </div>
+    </section>
       <main>
         <div class="feature-card sos-card">
           <h3>Emergency Alert</h3>
