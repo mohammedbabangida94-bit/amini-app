@@ -63,6 +63,21 @@
     #login-container {
     display: block; /* This ensures the login form is the first thing seen */
     }
+
+    #register-container {
+    display: none !important; /* Forces it to stay hidden on load */
+    }
+
+    #login-container {
+    display: block !important;
+    }
+
+    /* This class will be used by JS to switch screens */
+    .hidden {
+    display: none !important;
+    }
+    #register-container { display: none !important; }
+    #login-container { display: block !important; }
 </style>
     </style>  
   </head>
@@ -76,44 +91,39 @@
     </div>
 
     <section id="auth-screens">
+    
     <div id="login-container">
         <h2>Login to Amini</h2>
-        <form id="login-form"> <div>
-                <label for="login-email">Email</label><br>
+        <form id="login-form">
+            <div>
+                <label>Email</label><br>
                 <input type="email" id="login-email" required>
             </div>
             <div>
-                <label for="login-password">Password</label><br>
+                <label>Password</label><br>
                 <input type="password" id="login-password" required>
             </div>
             <button type="submit">Login</button>
             <p id="login-message-area"></p>
             <p>Need an account? <a href="#" id="show-register-link">Sign Up</a></p>
-        </form> </div>
-
-    <div id="register-container" style="display: none;">
+        </form> </div> <div id="register-container" style="display: none;">
         <h2>Register for Amini</h2>
-        <p>Create your account to get started.</p>
-        <form id="register-form"> <div>
-                <label for="register-email">Email</label><br>
+        <form id="register-form">
+            <div>
+                <label>Email</label><br>
                 <input type="email" id="register-email" required>
             </div>
-            
-            <div class="input-group" style="position: relative; margin-top: 10px;">
-                <label for="passwordInput">Password</label><br>
-                <input type="password" id="passwordInput" placeholder="Create Password" required 
-                    style="width: 100%; padding-right: 45px; box-sizing: border-box; height: 40px;">
-                <button type="button" id="passwordToggle" 
-                        style="position: absolute; right: 10px; bottom: 5px; width: 30px; border: none; background: transparent; cursor: pointer; z-index: 1001;">
+            <div class="input-group" style="position: relative;">
+                <label>Password</label><br>
+                <input type="password" id="passwordInput" required style="width: 100%; padding-right: 45px;">
+                <button type="button" id="passwordToggle" style="position: absolute; right: 10px; bottom: 5px;">
                    <span id="toggleIcon">👁️</span>
                 </button>
             </div>
-            
-            <button type="submit" style="margin-top: 20px;">Register</button>
+            <button type="submit">Register</button>
             <p id="message-area"></p>
             <p>Already have an account? <a href="#" id="show-login-link">Log In</a></p>
-        </form> </div>
-    </section>
+        </form> </div> </section>
       <main>
         <div class="feature-card sos-card">
           <h3>Emergency Alert</h3>
@@ -183,23 +193,24 @@ if (passwordToggle && passwordInput) {
         if (toggleIcon) toggleIcon.textContent = isPassword ? '🙈' : '👁️';
     });
 }
-
 // ==========================================
-// 3. SCREEN SWITCHING (TOGGLE)
+// 3. SCREEN SWITCHING (FIXED & AGGRESSIVE)
 // ==========================================
 if (showRegisterLink && loginContainer && registerContainer) {
     showRegisterLink.addEventListener('click', (e) => {
         e.preventDefault();
-        loginContainer.style.display = 'none';
-        registerContainer.style.display = 'block';
+        console.log("Switching to Register...");
+        loginContainer.style.setProperty('display', 'none', 'important');
+        registerContainer.style.setProperty('display', 'block', 'important');
     });
 }
 
 if (showLoginLink && loginContainer && registerContainer) {
     showLoginLink.addEventListener('click', (e) => {
         e.preventDefault();
-        registerContainer.style.display = 'none';
-        loginContainer.style.display = 'block';
+        console.log("Switching to Login...");
+        registerContainer.style.setProperty('display', 'none', 'important');
+        loginContainer.style.setProperty('display', 'block', 'important');
     });
 }
 
