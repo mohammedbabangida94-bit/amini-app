@@ -128,8 +128,14 @@
         </section> <section id="main-app" class="hidden" style="display: none;">
         <div class="app-container">
             <h2 id="welcome-message">Welcome!</h2>
-            <p>Your Secure SOS Dashboard is ready.</p>
-            <button id="logout-btn">Logout</button>
+            <div id="sos-circle" style="margin: 40px auto; width: 200px; height: 200px; background-color: red; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 8px solid #800000; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+            <span style="color: white; font-weight: bold; font-size: 2rem; user-select: none;">SEND SOS</span>
+        </div>
+
+        <p id="sos-status" style="font-weight: bold;"></p>
+        <p id="location-display" style="font-family: monospace; font-size: 0.9rem; color: #555;"></p>
+
+        <button id="logout-btn" style="margin-top: 30px;">Logout</button>
         </div>
     </section>
 
@@ -333,6 +339,45 @@ if (logoutBtn) {
         localStorage.removeItem('token');
         // Refresh the page to show the login screen again
         window.location.reload();
+    });
+}
+
+// ==========================================
+// 7. SOS & LOCATION LOGIC
+// ==========================================
+const sosButton = document.getElementById('sos-circle');
+const sosStatus = document.getElementById('sos-status');
+const locationDisplay = document.getElementById('location-display');
+
+if (sosButton) {
+    sosButton.addEventListener('click', () => {
+        sosStatus.textContent = "Detecting location...";
+        sosStatus.style.color = "orange";
+
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    locationDisplay.textContent = `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`;
+                    sosStatus.textContent = "SOS SENT SUCCESSFULLY!";
+                    sosStatus.style.color = "green";
+
+                    // Later, we will add a fetch() here to send these 
+                    // coordinates to your backend/emergency contacts.
+                    console.log(`SOS Sent from: ${lat}, ${lon}`);
+                    alert(`Emergency Alert! Your coordinates (${lat}, ${lon}) have been captured.`);
+                },
+                (error) => {
+                    sosStatus.textContent = "Error: Location denied.";
+                    sosStatus.style.color = "red";
+                    alert("Please enable location services to use SOS.");
+                }
+            );
+        } else {
+            sosStatus.textContent = "Geolocation not supported.";
+        }
     });
 }
   </script>
