@@ -355,28 +355,45 @@ if (sosButton) {
         sosStatus.style.color = "orange";
 
         if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    
-                    locationDisplay.textContent = `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`;
-                    sosStatus.textContent = "SOS SENT SUCCESSFULLY!";
-                    sosStatus.style.color = "green";
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                
+                locationDisplay.textContent = `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)}`;
 
-                    // Later, we will add a fetch() here to send these 
-                    // coordinates to your backend/emergency contacts.
-                    console.log(`SOS Sent from: ${lat}, ${lon}`);
-                    alert(`Emergency Alert! Your coordinates (${lat}, ${lon}) have been captured.`);
-                },
-                (error) => {
-                    sosStatus.textContent = "Error: Location denied.";
-                    sosStatus.style.color = "red";
-                    alert("Please enable location services to use SOS.");
+                // --- NEW CODE STARTS HERE ---
+                try {
+                    const token = localStorage.getItem('token'); 
+                    const response = await fetch('/api/alerts', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` 
+                        },
+                        body: JSON.stringify({ 
+                            latitude: lat, 
+                            longitude: lon,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+
+                    if (response.ok) {
+                        sosStatus.textContent = "ALERTS SENT SUCCESSFULLY!";
+                        sosStatus.style.color = "green";
+                    } else {
+                        sosStatus.textContent = "Server refused alert.";
+                        sosStatus.style.color = "red";
+                    }
+                } catch (err) {
+                    console.error("Connection error:", err);
+                    sosStatus.textContent = "Network Error.";
                 }
-            );
-        } else {
-            sosStatus.textContent = "Geolocation not supported.";
+                // --- NEW CODE ENDS HERE ---
+
+            }, (error) => {
+                sosStatus.textContent = "Location denied.";
+                sosStatus.style.color = "red";
+            });
         }
     });
 }
