@@ -13,6 +13,19 @@
     <meta name="theme-color" content="#232938">
     
     <title>Amini App | Secure SOS Alerts</title>
+
+    <style>
+        /* This is where your CSS goes */
+        #passwordInput {
+            position: relative;
+            z-index: 5; /* Increased to 5 to be extra safe */
+            padding-right: 45px; /* Creates space so text doesn't go under the eye icon */
+        }
+
+        #passwordToggle {
+            z-index: 10; /* Ensures the eye icon stays on top of the input */
+        }
+    </style>
     
   </head>
 
@@ -57,8 +70,8 @@
                 <div class="input-container">
                     <label for="passwordInput">Password</label>
                     <div style="position: relative;">
-                        <input type="password" id="passwordInput" name="password" placeholder="Enter your password" required>
-                        <button type="button" id="passwordToggle" style="position: absolute; top: 50%; right: 5px; transform: translateY(-50%); border: none; background: transparent; cursor: pointer;">
+                        <input type="password" id="passwordInput" name="password" placeholder="Enter your password" requiredg
+                        style="width: 100%; padding-right: 40px;"><button type="button" id="passwordToggle" style="position: absolute; top: 50%; right: 5px; transform: translateY(-50%); border: none; background: transparent; cursor: pointer;">
                             <span id="toggleIcon">👁️</span>
                         </button>
                     </div>
