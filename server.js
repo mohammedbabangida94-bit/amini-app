@@ -307,6 +307,32 @@ res.status(500).json({ message: 'Server Error during profile fetch.' });
     }
 });
 
+// ==========================================
+// EMERGENCY ALERT ROUTE
+// ==========================================
+app.post('/api/alerts', async (req, res) => {
+    try {
+        // 1. Get the data sent from the frontend
+        const { latitude, longitude, timestamp } = req.body;
+        
+        // 2. (Optional) Get the user info from the Token
+        // For now, we will just log it to the console to prove it works
+        console.log(`🚨 SOS RECEIVED! 🚨`);
+        console.log(`Location: ${latitude}, ${longitude}`);
+        console.log(`Time: ${timestamp}`);
+
+        // 3. Save to Database (Example logic)
+        // const newAlert = await Alert.create({ latitude, longitude, user: req.user.id });
+
+        // 4. Send success back to the phone/browser
+        res.status(200).json({ message: "Alert received and broadcasted!" });
+
+    } catch (err) {
+        console.error("Server failed to process SOS:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 
 // User report endpoint (SOS trigger)
 app.post('/api/report', authMiddleware, async (req, res) => {
