@@ -85,26 +85,26 @@ mongoose.connect(MONGO_URI || 'mongodb://localhost/temp_db', {
 // =================================================================
 // 2.5 MODELS
 // =================================================================
-const User = mongoose.model('user', new mongoose.Schema({
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    date: { type: Date, default: Date.now },
-
-    // START: NEW FIELD FOR USER-CONFIGURED CONTACTS
-    emergencyContacts: [{
-        type: String,   // Store each phone number as a string
-        trim: true,     // Remove any leading/trailing spaces
-        default: []     // Default to an empty array if the user hasn't set any
-    }],
-
-    }));
-
-const Report = mongoose.model('report', new mongoose.Schema({
+const reportSchema = new mongoose.Schema({
     userEmail: { type: String, required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     message: { type: String, required: true },
-    location: { lat: Number, long: Number },
+    location: {
+        latitude: Number,
+        longitude: Number
+    },
+    locationUrl: String,
     date: { type: Date, default: Date.now }
-}));
+});
+
+const Report = mongoose.model('Report', reportSchema);
+
+//const Report = mongoose.model('report', new mongoose.Schema({
+  //  userEmail: { type: String, required: true },
+    //message: { type: String, required: true },
+    //location: { lat: Number, long: Number },
+    //date: { type: Date, default: Date.now }
+//}));
 
 app.post('/api/alerts', async (req, res) => {
     try {
@@ -308,6 +308,51 @@ app.post(
     }
 );
 
+// ==========================================
+// 7. SOS & LOCATION LOGIC (Frontend)
+// ==========================================
+const sosButton = document.getElementById('sos-circle');
+const sosStatus = document.getElementById('sos-status');
+
+if (sosButton) {
+    sosButton.addEventListener('click', () => {
+        sosStatus.textContent = "Detecting location...";
+        
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                
+                try {
+                    // This tells the server to trigger the /api/report logic
+                    const response = await fetch('/api/report', { 
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'x-auth-token': localStorage.getItem('token') // The key the server expects
+                        },
+                        body: JSON.stringify({ 
+                            message: "Emergency SOS Triggered!",
+                            location: { latitude: lat, longitude: lon }
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        sosStatus.textContent = "SOS SENT! CONTACTS NOTIFIED.";
+                        sosStatus.style.color = "green";
+                    } else {
+                        sosStatus.textContent = "Error: " + (data.message || "Server error");
+                        sosStatus.style.color = "red";
+                    }
+                } catch (err) {
+                    sosStatus.textContent = "Network Error.";
+                }
+            });
+        }
+    });
+}
 
 // --- 5b. Protected Routes ---
 
@@ -494,3 +539,4 @@ app.put('/api/users/contacts', authMiddleware, async (req, res) => {
 // =================================================================
 app.listen(PORT, () => {
     console.log(`Amini app is running on http://0.0.0.0:${PORT}`);});
+
