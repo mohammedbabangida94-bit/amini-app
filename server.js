@@ -384,34 +384,6 @@ res.status(500).json({ message: 'Server Error during profile fetch.' });
     }
 });
 
-// ==========================================
-// EMERGENCY ALERT ROUTE
-// ==========================================
-app.post('/api/report', authMiddleware, async (req, res) => {
-    try {
-        const { latitude, longitude } = req.body;
-        
-        // 1. Log it so you can see it instantly on Render
-        console.log(`🚨 SOS RECEIVED! Lat: ${latitude}, Lon: ${longitude}`);
-
-        // 2. Save it to MongoDB
-        const newAlert = new Alert({
-            latitude,
-            longitude,
-            timestamp: new Date() // Records exactly when it hit the server
-        });
-
-        await newAlert.save();
-        
-        console.log("✅ SOS Saved to Database successfully.");
-
-        // 3. Respond to the frontend
-        res.status(200).json({ message: "Alert saved and logged!" });
-    } catch (err) {
-        console.error("❌ Database Error:", err);
-        res.status(500).json({ error: "Failed to save alert to database" });
-    }
-});
 
 
 // User report endpoint (SOS trigger)
