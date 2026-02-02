@@ -364,16 +364,15 @@ if (sosButton) {
                 // --- NEW CODE STARTS HERE ---
                 try {
                     const token = localStorage.getItem('token'); 
-                    const response = await fetch('/api/alerts', {
+                    const response = await fetch('/api/report', {
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}` 
+                            'x-auth-token': token 
                         },
                         body: JSON.stringify({ 
-                            latitude: lat, 
-                            longitude: lon,
-                            timestamp: new Date().toISOString()
+                             message: "SOS TRIGGERED", // 3. Added required message field
+                             location: { latitude: lat, longitude: lon } // 4. Structured location correctly
                         })
                     });
 
@@ -381,7 +380,8 @@ if (sosButton) {
                         sosStatus.textContent = "ALERTS SENT SUCCESSFULLY!";
                         sosStatus.style.color = "green";
                     } else {
-                        sosStatus.textContent = "Server refused alert.";
+                        const errorData = await response.json();
+                        sosStatus.textContent = errorData.message || "Server refused alert.";
                         sosStatus.style.color = "red";
                     }
                 } catch (err) {
@@ -397,6 +397,8 @@ if (sosButton) {
         }
     });
 }
+
+
   </script>
 </body>
 

@@ -311,48 +311,48 @@ app.post(
 // ==========================================
 // 7. SOS & LOCATION LOGIC (Frontend)
 // ==========================================
-const sosButton = document.getElementById('sos-circle');
-const sosStatus = document.getElementById('sos-status');
+//const sosButton = document.getElementById('sos-circle');
+//const sosStatus = document.getElementById('sos-status');
 
-if (sosButton) {
-    sosButton.addEventListener('click', () => {
-        sosStatus.textContent = "Detecting location...";
+//if (sosButton) {
+    //sosButton.addEventListener('click', () => {
+        //sosStatus.textContent = "Detecting location...";
         
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(async (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
+        //if ("geolocation" in navigator) {
+           // navigator.geolocation.getCurrentPosition(async (position) => {
+               // const lat = position.coords.latitude;
+               // const lon = position.coords.longitude;
                 
-                try {
+               // try {
                     // This tells the server to trigger the /api/report logic
-                    const response = await fetch('/api/report', { 
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'x-auth-token': localStorage.getItem('token') // The key the server expects
-                        },
-                        body: JSON.stringify({ 
-                            message: "Emergency SOS Triggered!",
-                            location: { latitude: lat, longitude: lon }
-                        })
-                    });
+                   // const response = await fetch('/api/report', { 
+                       // method: 'POST',
+                       // headers: { 
+                           // 'Content-Type': 'application/json',
+                           // 'x-auth-token': localStorage.getItem('token') // The key the server expects
+                        //},
+                        //body: JSON.stringify({ 
+                       //     message: "Emergency SOS Triggered!",
+                          //  location: { latitude: lat, longitude: lon }
+                      //  })
+                    //});
 
-                    const data = await response.json();
+                    //const data = await response.json();
 
-                    if (response.ok) {
-                        sosStatus.textContent = "SOS SENT! CONTACTS NOTIFIED.";
-                        sosStatus.style.color = "green";
-                    } else {
-                        sosStatus.textContent = "Error: " + (data.message || "Server error");
-                        sosStatus.style.color = "red";
-                    }
-                } catch (err) {
-                    sosStatus.textContent = "Network Error.";
-                }
-            });
-        }
-    });
-}
+                    //if (response.ok) {
+                       // sosStatus.textContent = "SOS SENT! CONTACTS NOTIFIED.";
+                       // sosStatus.style.color = "green";
+                   // } else {
+                    //    sosStatus.textContent = "Error: " + (data.message || "Server error");
+                     //   sosStatus.style.color = "red";
+                   // }
+               // } catch (err) {
+                 //   sosStatus.textContent = "Network Error.";
+              //  }
+           // });
+       // }
+    //});
+//}
 
 // --- 5b. Protected Routes ---
 
@@ -533,6 +533,7 @@ app.put('/api/users/contacts', authMiddleware, async (req, res) => {
         res.status(500).json({ message: 'Server Error during contact update.' });
     }
 });
+
 
 // =================================================================
 // 6. START THE SERVER
