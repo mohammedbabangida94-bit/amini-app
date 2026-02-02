@@ -118,25 +118,25 @@ const Report = mongoose.model('Report', reportSchema);
     //date: { type: Date, default: Date.now }
 //}));
 
-app.post('/api/alerts', async (req, res) => {
-    try {
-        const { latitude, longitude } = req.body;
+//app.post('/api/alerts', async (req, res) => {
+  //  try {
+    //    const { latitude, longitude } = req.body;
         
         // This saves the SOS to your database forever
-        const newAlert = new Alert({
-            latitude,
-            longitude,
+      //  const newAlert = new Alert({
+        //    latitude,
+          //  longitude,
             // If you have user info in the request, add it here
-        });
+        //});
 
-        await newAlert.save();
+        //await newAlert.save();
         
-        console.log("✅ SOS Saved to Database");
-        res.status(200).json({ message: "Alert saved!" });
-    } catch (err) {
-        res.status(500).json({ error: "Failed to save alert" });
-    }
-});
+        //console.log("✅ SOS Saved to Database");
+        //res.status(200).json({ message: "Alert saved!" });
+    //} catch (err) {
+      //  res.status(500).json({ error: "Failed to save alert" });
+    //}
+//});
     
 // =================================================================
 // 3. GLOBAL MIDDLEWARE (Order is critical!)
