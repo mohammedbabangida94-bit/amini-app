@@ -375,7 +375,7 @@ res.status(500).json({ message: 'Server Error during profile fetch.' });
 // ==========================================
 // EMERGENCY ALERT ROUTE
 // ==========================================
-app.post('/api/alerts', async (req, res) => {
+app.post('/api/report', authMiddleware, async (req, res) => {
     try {
         const { latitude, longitude } = req.body;
         
