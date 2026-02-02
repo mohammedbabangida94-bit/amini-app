@@ -82,6 +82,18 @@ mongoose.connect(MONGO_URI || 'mongodb://localhost/temp_db', {
         process.exit(1); 
     });
 
+// ==========================================
+// 1. USER MODEL (RE-ADD THIS)
+// ==========================================
+const userSchema = new mongoose.Schema({
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    emergencyContacts: [String], 
+    firstName: String
+});
+
+const User = mongoose.model('User', userSchema);
+
 // =================================================================
 // 2.5 MODELS
 // =================================================================
