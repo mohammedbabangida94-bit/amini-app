@@ -142,6 +142,14 @@
     <hr>
 
       <main>
+
+        <section id="contacts-section" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+            <h3>Emergency Contacts</h3>
+            <div id="contact-list" style="margin-bottom: 10px;"></div>
+            <input type="tel" id="new-contact" placeholder="+2348000000000" style="padding: 8px;">
+            <button onclick="saveContact()" style="padding: 8px; background: #28a745; color: white; border: none; cursor: pointer;">Add Contact</button>
+        </section>
+
         <div class="feature-card sos-card">
           <h3>Emergency Alert</h3>
           <button id="sos-btn">SOS</button>
@@ -398,6 +406,35 @@ if (sosButton) {
     });
 }
 
+        // Function to save a new contact to the database
+async function saveContact() {
+    const contactInput = document.getElementById('new-contact');
+    const phoneNumber = contactInput.value.trim();
+    const token = localStorage.getItem('token');
+
+    if (!phoneNumber) return alert("Please enter a number");
+
+    try {
+        const response = await fetch('/api/users/contacts', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-auth-token': token 
+            },
+            body: JSON.stringify({ contact: phoneNumber })
+        });
+
+        if (response.ok) {
+            alert("Contact added successfully!");
+            contactInput.value = "";
+            // Optionally: Refresh the list
+        } else {
+            alert("Failed to save contact. Make sure you are logged in.");
+        }
+    } catch (err) {
+        console.error("Error saving contact:", err);
+    }
+}
 
   </script>
 </body>
