@@ -376,41 +376,14 @@ if (sosButton) {
     });
 }
 
-        // Function to save a new contact to the database
-adocument.addEventListener('DOMContentLoaded', () => {
-    const addBtn = document.getElementById('add-contact-btn');
-    
-    if (addBtn) {
-        addBtn.addEventListener('click', async () => {
-            const contactInput = document.getElementById('new-contact');
-            const phoneNumber = contactInput.value.trim();
-            const token = localStorage.getItem('token');
-
-            if (!phoneNumber) return alert("Please enter a number");
-
-            try {
-                const response = await fetch('/api/users/contacts', {
-                    method: 'PUT',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'x-auth-token': token 
-                    },
-                    body: JSON.stringify({ contacts: [phoneNumber] }) 
-                });
-
-                if (response.ok) {
-                    alert("Contact added successfully!");
-                    contactInput.value = "";
-                } else {
-                    const errorData = await response.json();
-                    alert("Error: " + errorData.message);
-                }
-            } catch (err) {
-                console.error("Fetch error:", err);
-            }
-        });
-    }
-});
+ document.addEventListener('DOMContentLoaded', () => {
+        const addBtn = document.getElementById('add-contact-btn');
+        if (addBtn) {
+            addBtn.addEventListener('click', async () => {
+                // ... the logic to fetch /api/users/contacts ...
+            });
+        }
+    });       
   </script>
 </body>
 
