@@ -328,7 +328,7 @@ const sosStatus = document.getElementById('sos-status');
 const locationDisplay = document.getElementById('location-display');
 
 if (sosButton) {
-    sosButton.addEventListener('click', () => {
+    sosButton.addEventListener('click', async () => {
         sosStatus.textContent = "Detecting location...";
         sosStatus.style.color = "orange";
 
@@ -409,7 +409,7 @@ if (sosButton) {
       });
     }
   });
-  
+
   </script>
 </body>
 
