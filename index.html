@@ -84,113 +84,78 @@
  <body>
     
 
+  <body>
   <div class="app-container">
     <div class="app-branding">
-        <h1>Amini- Personal Security App</h1>
-        <p>Your secure peace of mind.</p>
+      <h1>Amini- Personal Security App</h1>
+      <p>Your secure peace of mind.</p>
     </div>
 
     <section id="auth-screens">
-    
-    <div id="login-container">
+      <div id="login-container">
         <h2>Login to Amini</h2>
         <form id="login-form">
-            <div>
-                <label>Email</label><br>
-                <input type="email" id="login-email" required>
-            </div>
-            <div>
-                <label>Password</label><br>
-                <input type="password" id="login-password" required>
-            </div>
-            <button type="submit">Login</button>
-            <p id="login-message-area"></p>
-            <p>Need an account? <a href="#" id="show-register-link">Sign Up</a></p>
-        </form> </div> <div id="register-container" style="display: none;">
+          <div><label>Email</label><br><input type="email" id="login-email" required></div>
+          <div><label>Password</label><br><input type="password" id="login-password" required></div>
+          <button type="submit">Login</button>
+          <p id="login-message-area"></p>
+          <p>Need an account? <a href="#" id="show-register-link">Sign Up</a></p>
+        </form>
+      </div>
+
+      <div id="register-container" style="display: none;">
         <h2>Register for Amini</h2>
         <form id="register-form">
-            <div>
-                <label>Email</label><br>
-                <input type="email" id="register-email" required>
-            </div>
-            <div class="input-group" style="position: relative;">
-                <label>Password</label><br>
-                <input type="password" id="passwordInput" required style="width: 100%; padding-right: 45px;">
-                <button type="button" id="passwordToggle" style="position: absolute; right: 10px; bottom: 5px;">
-                   <span id="toggleIcon">👁️</span>
-                </button>
-            </div>
-            <button type="submit">Register</button>
-            <p id="message-area"></p>
-            <p>Already have an account? <a href="#" id="show-login-link">Log In</a></p>
-        </form> </div> </section>
-
-        </section> <section id="main-app" class="hidden" style="display: none;">
-        <div class="app-container">
-            <h2 id="welcome-message">Welcome!</h2>
-            <div id="sos-circle" style="margin: 40px auto; width: 200px; height: 200px; background-color: red; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 8px solid #800000; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
-            <span style="color: white; font-weight: bold; font-size: 2rem; user-select: none;">SEND SOS</span>
-        </div>
-
-        <p id="sos-status" style="font-weight: bold;"></p>
-        <p id="location-display" style="font-family: monospace; font-size: 0.9rem; color: #555;"></p>
-
-        <button id="logout-btn" style="margin-top: 30px;">Logout</button>
-        </div>
+          <div><label>Email</label><br><input type="email" id="register-email" required></div>
+          <div class="input-group" style="position: relative;">
+            <label>Password</label><br>
+            <input type="password" id="passwordInput" required style="width: 100%; padding-right: 45px;">
+            <button type="button" id="passwordToggle" style="position: absolute; right: 10px; bottom: 5px;">
+              <span id="toggleIcon">👁️</span>
+            </button>
+          </div>
+          <button type="submit">Register</button>
+          <p id="message-area"></p>
+          <p>Already have an account? <a href="#" id="show-login-link">Log In</a></p>
+        </form>
+      </div>
     </section>
 
-    <hr>
+    <section id="main-app" class="hidden" style="display: none;">
+      <h2 id="welcome-message">Welcome!</h2>
 
-      <main>
+      <div id="sos-circle" style="margin: 40px auto; width: 200px; height: 200px; background-color: red; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 8px solid #800000; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+        <span style="color: white; font-weight: bold; font-size: 2rem; user-select: none;">SEND SOS</span>
+      </div>
 
-        <section id="contacts-section" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
-            <h3>Emergency Contacts</h3>
-            <div id="contact-list" style="margin-bottom: 10px;"></div>
-            <input type="tel" id="new-contact" placeholder="+2348000000000" style="padding: 8px;">
-            <button onclick="saveContact()" style="padding: 8px; background: #28a745; color: white; border: none; cursor: pointer;">Add Contact</button>
-        </section>
+      <p id="sos-status" style="font-weight: bold; text-align: center;"></p>
+      <p id="location-display" style="font-family: monospace; font-size: 0.9rem; color: #555; text-align: center;"></p>
 
-        <div class="feature-card sos-card">
-          <h3>Emergency Alert</h3>
-          <button id="sos-btn">SOS</button>
-          <p>Press and hold for 3 seconds</p>
-        </div>
-        
-        <div class="feature-card">
-          <h3>Your Location</h3>
-          <p id="location-display">Location will appear here...</p>
-          <button id="get-location-btn">Update Location</button>
-        </div>
-        
-        <div class="feature-card">
-          <h3>Emergency Contacts</h3>
-          <ul id="contact-list">
-            <li>Police (911)</li>
-            <li>Ambulance (112)</li>
-          </ul>
-          <div class="input-group">
-            <input type="text" id="contact-input" placeholder="Add contact (e.g., Mom)">
-            <button id="add-contact-btn">Add</button>
-          </div>
-        </div>
+      <div id="contacts-section" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+        <h3>Emergency Contacts</h3>
+        <div id="contact-list" style="margin-bottom: 10px;"></div>
+        <input type="tel" id="new-contact" placeholder="+2348000000000" style="padding: 8px;">
+        <button onclick="saveContact()" style="padding: 8px; background: #28a745; color: white; border: none; cursor: pointer;">Add Contact</button>
+      </div>
+
+      <div style="margin-top: 20px;">
         <h3>Secure Communication</h3>
         <div id="secure-message-section">
-        <input type="text" id="secure-message-input" placeholder="Type a secure message...">"
-        <button id="send-message-btn" class="sos-button">Send Secure Message</button>
-        <p id="status-log"></p>
+          <input type="text" id="secure-message-input" placeholder="Type a secure message..." style="width: 80%; padding: 8px;">
+          <button id="send-message-btn" class="sos-button">Send</button>
+          <p id="status-log"></p>
+        </div>
       </div>
+
+      <div style="margin-top: 20px;">
         <h3>Activity Log</h3>
-        <div id="activity-log">
-            </div>
+        <div id="activity-log" style="background: #f9f9f9; padding: 10px; min-height: 50px;"></div>
+      </div>
 
+      <button id="logout-btn" style="margin-top: 30px; background: #666; color: white;">Logout</button>
     </section>
-    
-          <div id="status-log"></div>
-            <p>App initialized.</p>
-          </div>
-    
-        </main>
-
+  </div>
+  
   <script type="module">
     
 // ==========================================
