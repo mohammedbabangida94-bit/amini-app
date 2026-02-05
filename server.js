@@ -388,7 +388,13 @@ res.status(500).json({ message: 'Server Error during profile fetch.' });
 
 // User report endpoint (SOS trigger)
 app.post('/api/report', authMiddleware, async (req, res) => {
+    console.log("🚨 SOS ALERT RECEIVED from user:", req.user.id);
+    console.log("Location Data:", req.body.location);
     try {
+        console.log("✅ Report saved to database");
+
+        // ... your logic to send SMS ...
+        console.log("📲 Attempting to send SMS via Sendchamp...");
         const { message, location } = req.body;
         const userEmail = req.user.email;
         
@@ -410,7 +416,7 @@ app.post('/api/report', authMiddleware, async (req, res) => {
         
         // 2. Prepare the data for the report
         const locationUrl = (locationToUse.latitude && locationToUse.longitude)
-            ? `https://maps.google.com/maps/search/?api=1&query=${locationToUse.latitude},${locationToUse.longitude}`
+            ? `https://www.google.com/maps?q=${locationToUse.latitude},${locationToUse.longitude}`
             : 'Location data unavailable.';
 
         const newReport = new Report({
@@ -443,7 +449,7 @@ app.post('/api/report', authMiddleware, async (req, res) => {
                         message: messageBody,
                         route: 'non_dnd' 
                     });
-
+console.log("SENDCHAMP RAW RESPONSE:", JSON.stringify(response));
                     console.log(`Sendchamp SMS sent to ${contact}. Response:`, response.status);
                     return { contact, status: 'Sent', response: response.status };
 
@@ -451,6 +457,8 @@ app.post('/api/report', authMiddleware, async (req, res) => {
                     console.error(`Sendchamp SMS FAILED for ${contact}:`, sendError.message);
                     return { contact, status: 'Failed', error: sendError.message };
                 }
+
+                    
             });
 
             await Promise.allSettled(smsPromises); 
