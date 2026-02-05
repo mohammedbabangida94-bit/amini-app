@@ -485,38 +485,71 @@ app.get('/api/reports', authMiddleware, async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 });
-// Route to update or set the user's emergency contacts
-app.put('/api/users/contacts', authMiddleware, async (req, res) => {
+
+
+document.getElementById('add-contact-btn').addEventListener('click', async () => {
+    const contactInput = document.getElementById('new-contact');
+    const phoneNumber = contactInput.value.trim();
+    const token = localStorage.getItem('token');
+
+    if (!phoneNumber) return alert("Please enter a number");
+
     try {
-        // Expects an array of phone numbers named 'contacts' in the request body
-        const { contacts } = req.body; 
-
-        if (!Array.isArray(contacts)) {
-            return res.status(400).json({ message: 'Contacts must be provided as an array.' });
-        }
-
-        // Find the user by ID and update the emergencyContacts field
-        const user = await User.findByIdAndUpdate(
-            req.user.id,
-            // Use the $set operator to replace the entire emergencyContacts array
-            { $set: { emergencyContacts: contacts } },
-            { new: true, select: '-password' } // Return the updated document, excluding password
-        );
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
-        }
-
-        res.json({ 
-            message: 'Emergency contacts updated successfully!', 
-            contacts: user.emergencyContacts 
+        const response = await fetch('/api/users/contacts', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-auth-token': token 
+            },
+            // SURGERY: Sending an ARRAY named 'contacts' to match your Backend
+            body: JSON.stringify({ contacts: [phoneNumber] }) 
         });
 
+        const data = await response.json();
+
+        if (response.ok) {
+            alert("Contact added successfully!");
+            contactInput.value = "";
+            console.log("Updated list:", data.contacts);
+        } else {
+            alert("Error: " + data.message);
+        }
     } catch (err) {
-        console.error("Error updating contacts:", err.message);
-        res.status(500).json({ message: 'Server Error during contact update.' });
+        console.error("Connection error:", err);
     }
 });
+// Route to update or set the user's emergency contacts
+//app.put('/api/users/contacts', authMiddleware, async (req, res) => {
+    //try {
+        // Expects an array of phone numbers named 'contacts' in the request body
+        //const { contacts } = req.body; 
+
+        //if (!Array.isArray(contacts)) {
+          //  return res.status(400).json({ message: 'Contacts must be provided as an array.' });
+        //}
+
+        // Find the user by ID and update the emergencyContacts field
+        //const user = await User.findByIdAndUpdate(
+            //req.user.id,
+            // Use the $set operator to replace the entire emergencyContacts array
+            //{ $set: { emergencyContacts: contacts } },
+          //  { new: true, select: '-password' } // Return the updated document, excluding password
+        //);
+
+        //if (!user) {
+          //  return res.status(404).json({ message: 'User not found.' });
+        //}
+
+        //res.json({ 
+         //   message: 'Emergency contacts updated successfully!', 
+       //     contacts: user.emergencyContacts 
+     //   });
+
+    //} catch (err) {
+     //   console.error("Error updating contacts:", err.message);
+   //     res.status(500).json({ message: 'Server Error during contact update.' });
+ //   }
+//});
 
 
 // =================================================================
