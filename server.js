@@ -489,38 +489,34 @@ app.get('/api/reports', authMiddleware, async (req, res) => {
 
 
 // Route to update or set the user's emergency contacts
-//app.put('/api/users/contacts', authMiddleware, async (req, res) => {
-    //try {
-        // Expects an array of phone numbers named 'contacts' in the request body
-        //const { contacts } = req.body; 
+app.put('/api/users/contacts', authMiddleware, async (req, res) => {
+    try {
+        const { contacts } = req.body; 
 
-        //if (!Array.isArray(contacts)) {
-          //  return res.status(400).json({ message: 'Contacts must be provided as an array.' });
-        //}
+        if (!Array.isArray(contacts)) {
+            return res.status(400).json({ message: 'Contacts must be provided as an array.' });
+        }
 
-        // Find the user by ID and update the emergencyContacts field
-        //const user = await User.findByIdAndUpdate(
-            //req.user.id,
-            // Use the $set operator to replace the entire emergencyContacts array
-            //{ $set: { emergencyContacts: contacts } },
-          //  { new: true, select: '-password' } // Return the updated document, excluding password
-        //);
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            { $set: { emergencyContacts: contacts } },
+            { new: true, select: '-password' }
+        );
 
-        //if (!user) {
-          //  return res.status(404).json({ message: 'User not found.' });
-        //}
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
 
-        //res.json({ 
-         //   message: 'Emergency contacts updated successfully!', 
-       //     contacts: user.emergencyContacts 
-     //   });
+        res.json({ 
+            message: 'Emergency contacts updated successfully!', 
+            contacts: user.emergencyContacts 
+        });
 
-    //} catch (err) {
-     //   console.error("Error updating contacts:", err.message);
-   //     res.status(500).json({ message: 'Server Error during contact update.' });
- //   }
-//});
-
+    } catch (err) {
+        console.error("Error updating contacts:", err.message);
+        res.status(500).json({ message: 'Server Error during contact update.' });
+    }
+});
 
 // =================================================================
 // 6. START THE SERVER
