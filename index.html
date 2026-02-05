@@ -135,7 +135,7 @@
         <h3>Emergency Contacts</h3>
         <div id="contact-list" style="margin-bottom: 10px;"></div>
         <input type="tel" id="new-contact" placeholder="+2348000000000" style="padding: 8px;">
-        <button onclick="saveContact()" style="padding: 8px; background: #28a745; color: white; border: none; cursor: pointer;">Add Contact</button>
+        <button id="add-contact-btn" style="padding: 8px; background: #28a745; color: white; border: none; cursor: pointer;">Add Contact</button>
       </div>
 
       <div style="display: flex; gap: 10px; margin-top: 10px;">
@@ -377,35 +377,40 @@ if (sosButton) {
 }
 
         // Function to save a new contact to the database
-async function saveContact() {
-    const contactInput = document.getElementById('new-contact');
-    const phoneNumber = contactInput.value.trim();
-    const token = localStorage.getItem('token');
+adocument.addEventListener('DOMContentLoaded', () => {
+    const addBtn = document.getElementById('add-contact-btn');
+    
+    if (addBtn) {
+        addBtn.addEventListener('click', async () => {
+            const contactInput = document.getElementById('new-contact');
+            const phoneNumber = contactInput.value.trim();
+            const token = localStorage.getItem('token');
 
-    if (!phoneNumber) return alert("Please enter a number");
+            if (!phoneNumber) return alert("Please enter a number");
 
-    try {
-        const response = await fetch('/api/users/contacts', {
-            method: 'PUT',
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-auth-token': token 
-            },
-            body: JSON.stringify({ contact: phoneNumber })
+            try {
+                const response = await fetch('/api/users/contacts', {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-auth-token': token 
+                    },
+                    body: JSON.stringify({ contacts: [phoneNumber] }) 
+                });
+
+                if (response.ok) {
+                    alert("Contact added successfully!");
+                    contactInput.value = "";
+                } else {
+                    const errorData = await response.json();
+                    alert("Error: " + errorData.message);
+                }
+            } catch (err) {
+                console.error("Fetch error:", err);
+            }
         });
-
-        if (response.ok) {
-            alert("Contact added successfully!");
-            contactInput.value = "";
-            // Optionally: Refresh the list
-        } else {
-            alert("Failed to save contact. Make sure you are logged in.");
-        }
-    } catch (err) {
-        console.error("Error saving contact:", err);
     }
-}
-
+});
   </script>
 </body>
 
