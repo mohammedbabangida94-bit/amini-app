@@ -487,37 +487,7 @@ app.get('/api/reports', authMiddleware, async (req, res) => {
 });
 
 
-document.getElementById('add-contact-btn').addEventListener('click', async () => {
-    const contactInput = document.getElementById('new-contact');
-    const phoneNumber = contactInput.value.trim();
-    const token = localStorage.getItem('token');
 
-    if (!phoneNumber) return alert("Please enter a number");
-
-    try {
-        const response = await fetch('/api/users/contacts', {
-            method: 'PUT',
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-auth-token': token 
-            },
-            // SURGERY: Sending an ARRAY named 'contacts' to match your Backend
-            body: JSON.stringify({ contacts: [phoneNumber] }) 
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            alert("Contact added successfully!");
-            contactInput.value = "";
-            console.log("Updated list:", data.contacts);
-        } else {
-            alert("Error: " + data.message);
-        }
-    } catch (err) {
-        console.error("Connection error:", err);
-    }
-});
 // Route to update or set the user's emergency contacts
 //app.put('/api/users/contacts', authMiddleware, async (req, res) => {
     //try {
