@@ -1,7 +1,8 @@
 // =================================================================
 // 1. IMPORTS
 // =================================================================
-require('dotenv').config();
+const dotenv = require('dotenv');
+dotenv.config();
 const mongoose = require('mongoose');
 const express = require('express');
 const cors = require ('cors');
@@ -11,7 +12,7 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const sendchamp = require('sendchamp');
+const sendchamp = require('sendchamp').Sendchamp;
 
 // Initialize the client
 const sendchampClient = new sendchamp({
