@@ -12,11 +12,11 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Sendchamp = require('sendchamp').Sendchamp; // Capital S
+const sendchamp = require('sendchamp'); 
 
-const sendchampClient = new Sendchamp({ // Capital S
+const sendchampClient = new sendchamp({
   publicKey: process.env.SENDCHAMP_PUBLIC_KEY,
-  stage: 'live'
+  stage: 'live' 
 });
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
@@ -52,33 +52,6 @@ app.use((req, res, next) => {
 
 app.use(express.urlencoded({ extended: true })); // Good practice to include
 
-// Initialize Sendchamp Client
-//let sendchampClient = null;
-/*// The Sendchamp client is not initialized to bypass the CRITICAL ERROR.
-// This allows the rest of the application (login, register) to function.
-try {
-    const publicKey = process.env.SENDCHAMP_PUBLIC_KEY;
-    const baseUrl = process.env.SENDCHAMP_BASE_URL;
-
-    if (!publicKey || !baseUrl) {
-        throw new Error('Sendchamp keys (PUBLIC_KEY or BASE_URL) not configured in environment variables.');
-    }
-
-    sendchampClient = new Sendchamp({ 
-        publicKey: publicKey,
-        baseUrl: baseUrl 
-    });
-    console.log('Sendchamp Client Initialized. Ready for SMS service.');
-
-} catch (error) {
-    console.error('CRITICAL ERROR: Sendchamp Initialization Failed:', error.message);
-    
-    // Continue running the app without SMS functionality if needed, 
-    // but log the error to alert the developer.
-}
-*/
-// --- Database Connection ---
-// MONGO_URI is defined above as const MONGO_URI = process.env.DB_CONNECTION_STRING;
 
 // Use MONGO_URI and the fallback for stability, keeping your connection options.
 mongoose.connect(MONGO_URI || 'mongodb://localhost/temp_db', {
