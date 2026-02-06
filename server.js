@@ -15,7 +15,7 @@ const jwt = require('jsonwebtoken');
 const sendchamp = require('sendchamp').Sendchamp;
 
 // Initialize the client
-const sendchampClient = new sendchamp({
+const sendchampClient = new Sendchamp({
   publicKey: process.env.SENDCHAMP_PUBLIC_KEY, 
   stage: 'live' 
 });
