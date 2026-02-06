@@ -38,6 +38,18 @@ app.use(cors({
 // 3b. Body Parser (MUST be before routes)
 // =================================================================
 app.use(express.json());
+
+// Global Logger: Place this before all routes
+app.use((req, res, next) => {
+    const timestamp = new Date().toLocaleString();
+    console.log(`--- NEW REQUEST [${timestamp}] ---`);
+    console.log(`Method: ${req.method}`);
+    console.log(`URL:    ${req.url}`);
+    console.log(`Body:   `, req.body); // This helps check if 'location' is arriving
+    console.log(`---------------------------------`);
+    next(); // This tells the server to move to the actual route logic
+});
+
 app.use(express.urlencoded({ extended: true })); // Good practice to include
 
 // Initialize Sendchamp Client
