@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "node server.js",
-    "build": "npm install" 
+    "build": "npm install"
   },
   "dependencies": {
     "axios": "^1.13.2",
@@ -16,6 +16,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
     "request": "^2.88.2",
+    "sendchamp": "^1.0.8",
     "sendchamp-sdk": "^1.1.0"
   }
 }
