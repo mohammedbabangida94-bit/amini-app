@@ -11,12 +11,13 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-// const { default: Sendchamp } = require('sendchamp'); 
-// const Sendchamp = require('sendchamp').default; 
-// ...
-//const Sendchamp = require('sendchamp').default; // Accesses the default export
-// Temporarily comment out the failing import:
+const sendchamp = require('sendchamp');
 
+// Initialize the client
+const sendchampClient = new sendchamp({
+  publicKey: process.env.SENDCHAMP_PUBLIC_KEY, 
+  stage: 'live' 
+});
 
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
@@ -213,9 +214,6 @@ try {
     }
 };
 
-// =================================================================
-// 5. ROUTES
-// =================================================================
 
 // =================================================================
 // 5a. FRONTEND & PUBLIC ROUTES
@@ -456,7 +454,7 @@ app.post('/api/report', authMiddleware, async (req, res) => {
 
                 try {
                     const response = await sendchampClient.sms.send({
-                        sender_name: 'AminiApp',
+                        sender_name: 'Sendchamp',
                         to: [formattedContact],
                         message: messageBody,
                         route: 'non_dnd' 
@@ -473,7 +471,8 @@ console.log("SENDCHAMP RAW RESPONSE:", JSON.stringify(response));
                     
             });
 
-            await Promise.allSettled(smsPromises); 
+            await Promise.allSettled(smsPromises);
+            await Promise.all(smsPromises); 
         } else if (user.emergencyContacts.length === 0) {
             console.log('SOS processed: User has no emergency contacts set up.');
         } else {
