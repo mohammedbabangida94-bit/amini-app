@@ -54,7 +54,7 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: true })); // Good practice to include
 
 // Initialize Sendchamp Client
-let sendchampClient = null;
+//let sendchampClient = null;
 /*// The Sendchamp client is not initialized to bypass the CRITICAL ERROR.
 // This allows the rest of the application (login, register) to function.
 try {
