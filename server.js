@@ -197,22 +197,18 @@ app.post('/api/report', authMiddleware, async (req, res) => {
         await newReport.save();
 
         // Sendchamp SMS Logic
-        if (sendchampClient && user.emergencyContacts?.length > 0) {
-            user.emergencyContacts.forEach(async (contact) => {
-                const formatted = contact.startsWith('+') ? contact.substring(1) : contact;
-                try {
-                    await sendchampClient.sms.send({
-                        sender_name: 'Sendchamp',
-                        to: [formatted],
-                        message: `🚨 EMERGENCY! ${user.firstName || user.email} needs help! ${locationUrl}`,
-                        route: 'non_dnd' 
-                    });
-                } catch (smsErr) {
-                    console.error(`SMS Failed for ${contact}:`, smsErr.message);
-                }
-            });
-        }
-
+        let sendchampClient;
+try {
+    // This covers all versions of the Sendchamp SDK
+    const Sendchamp = require('sendchamp');
+    sendchampClient = new Sendchamp({
+        publicKey: process.env.SENDCHAMP_PUBLIC_KEY,
+        stage: 'live' 
+    });
+    console.log("✅ Sendchamp initialized successfully!");
+} catch (err) {
+    console.error("❌ Sendchamp initialization failed:", err.message);
+}
         res.json({ message: 'SOS processed', locationUrl });
     } catch (err) {
         res.status(500).json({ message: 'SOS failed', error: err.message });
@@ -238,6 +234,12 @@ app.put('/api/users/contacts', authMiddleware, async (req, res) => {
     }
 });
 
+app.listen(PORT, () => {
+    console.log(`🚀 Amini app running on port ${PORT}`);
+    console.log("📁 Current Directory:", __dirname);
+    const fs = require('fs');
+    console.log("📄 Files present:", fs.readdirSync(__dirname));
+});
 // =================================================================
 // 8. START
 // =================================================================
