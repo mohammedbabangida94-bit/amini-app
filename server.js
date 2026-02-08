@@ -1,5 +1,5 @@
 // =================================================================
-// 1. IMPORTS
+// 1. IMPORTS & CORE CONFIG
 // =================================================================
 const dotenv = require('dotenv');
 dotenv.config();
@@ -10,73 +10,47 @@ const path = require('path');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Sendchamp = require('sendchamp'); // Standard import
 
-// ⚠️ CHANGE THIS: Just use the basic require, do not call any 'new' until we fix the constructor
-const sendchamp = require('sendchamp');
-
-// =================================================================
-// 2. CONFIGURATION
-// =================================================================
 const app = express();
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key';
 const MONGO_URI = process.env.MONGO_URI;
 
+// =================================================================
+// 2. SENDCHAMP (Surgical Fix to stop Port Hijacking)
+// =================================================================
 let sendchampClient;
-
 try {
-    // Check if sendchamp is a function (some versions) or has a constructor
-    if (typeof sendchamp === 'function') {
-        sendchampClient = new sendchamp(process.env.SENDCHAMP_PUBLIC_KEY, 'live');
-    } else if (sendchamp.Sendchamp) {
-        sendchampClient = new sendchamp.Sendchamp(process.env.SENDCHAMP_PUBLIC_KEY, 'live');
-    } else {
-        // Fallback to simple object if it's already an instance
-        sendchampClient = sendchamp; 
-    }
-    console.log("✅ Sendchamp initialized as client (not server)");
+    // Passing config as an object prevents the library from starting its own server
+    sendchampClient = new Sendchamp({
+        publicKey: process.env.SENDCHAMP_PUBLIC_KEY,
+        stage: 'live' 
+    });
+    console.log("✅ Sendchamp initialized as a client helper.");
 } catch (err) {
-    console.error("❌ Sendchamp initialization failed:", err.message);
+    console.error("❌ Sendchamp error: ", err.message);
 }
 
 // =================================================================
-// 3. MIDDLEWARE (Order is critical!)
+// 3. MIDDLEWARE (The "Open Door" Policy)
 // =================================================================
 app.set('trust proxy', 1);
 
-// CORS
-const allowedOrigins = [
-    'https://amini-app-new.onrender.com',
-    'https://amini-frontend-client.vercel.app',
-    'https://amini-app.com', 
-    'https://www.amini-app.com', 
-    'https://amini-frontend-client-8jov8es3r.vercel.app',
-    'http://localhost:5500'
-];
-
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) {
-            return callback(new Error('CORS blocked this origin'), false);
-        }
-        return callback(null, true);
-    },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, 
-}));
+// Simplified CORS to ensure your phone can connect immediately
+app.use(cors({ origin: '*', credentials: true }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Global Logger
+// Serve static files IMMEDIATELY
+app.use(express.static(__dirname));
+
+// Global Logger (To see if requests reach the server)
 app.use((req, res, next) => {
-    console.log(`[${new Date().toLocaleString()}] ${req.method} ${req.url}`);
+    console.log(`>>> 🚦 [${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
     next();
 });
-
-// Static Files - Must be BEFORE routes
-app.use(express.static(__dirname));
 
 // =================================================================
 // 4. DATABASE MODELS
