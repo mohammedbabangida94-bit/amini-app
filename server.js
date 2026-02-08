@@ -78,6 +78,26 @@ mongoose.connect(MONGO_URI || 'mongodb://localhost/temp_db', {
         process.exit(1); 
     });
 
+    // =================================================================
+// 4. UX & STATIC FILES (THE FIX)
+// =================================================================
+
+// Tell Express where your frontend files are
+app.use(express.static(__dirname));
+
+// Serve index.html as the primary entry point
+app.get('/', (req, res) => {
+    const indexPath = path.join(__dirname, 'index.html');
+    console.log("🔍 Attempting to serve UX from:", indexPath);
+    
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            console.error("❌ UX Error: Cannot find file at", indexPath);
+            res.status(404).send(`<h1>Server is Live</h1><p>But index.html was not found in: ${indexPath}</p>`);
+        }
+    });
+});
+
 // ==========================================
 // 1. USER MODEL (RE-ADD THIS)
 // ==========================================
@@ -116,133 +136,64 @@ const limiter = rateLimit({
 });
 
 
-// 3c. CORS Configuration (Corrected for your domains)
-//const allowedOrigins = [
-    'https://amini-app-new.onrender.com', // Your backend URL
-    'https://amini-frontend-client.vercel.app', // Example Vercel primary domain
+// =================================================================
+// 3c. CORS Configuration (Specific for your domains)
+// =================================================================
+const allowedOrigins = [
+    'https://amini-app-new.onrender.com',
+    'https://amini-frontend-client.vercel.app',
     'https://amini-app.com', 
     'https://www.amini-app.com', 
-    'https://amini-frontend-client-8jov8es3r.vercel.app', // Specific Vercel deployment URL
-    'http://localhost:5500', // Local development
-//];
+    'https://amini-frontend-client-8jov8es3r.vercel.app',
+    'http://localhost:5500'
+];
 
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, 
+}));
 
+// =================================================================
+// 5. UX & API ROUTES (SINGLE SOURCE OF TRUTH)
+// =================================================================
 
-// 1. Static files MUST come before routes
+// Step A: Serve static files ONCE
 app.use(express.static(__dirname));
 
-// 2. The Main UX Route
+// Step B: Define the ROOT route ONCE with diagnostic logging
 app.get('/', (req, res) => {
     const indexPath = path.join(__dirname, 'index.html');
-    
+    console.log("🔍 Serving UX from:", indexPath);
     res.sendFile(indexPath, (err) => {
         if (err) {
-            console.error("❌ FILE NOT FOUND AT:", indexPath);
-            // This fallback helps us debug without crashing
-            res.status(404).send(`Cannot find index.html. Server looked in: ${__dirname}`);
+            console.error("❌ UX Error:", err.message);
+            res.status(404).send(`Server is UP, but cannot find index.html at ${indexPath}`);
         }
     });
 });
 
-
-// =================================================================
-// 4. AUTHENTICATION MIDDLEWARE (Cleaned and debugged)
-// =================================================================
-
-    const authMiddleware = (req, res, next) => {
-    const token = req.header('x-auth-token'); 
-
-if (!token) {
-        return res.status(401).json({ message: 'No token, authorization denied' });
-    }
-    
-try {
-        // Debug: Correctly using JWT_SECRET variable
-    const decoded = jwt.verify(token, JWT_SECRET); 
-    req.user = decoded.user;
-    next(); 
-
-    } catch (err) {
-     return res.status(401).json({ message: 'Token is not valid' });
-    }
-};
-
-
-// =================================================================
-// 5a. FRONTEND & PUBLIC ROUTES
-// =================================================================
-
-// 1. SERVE STATIC FILES (CSS, JS, Images)
-// This ensures your styles load correctly from the root amini-app folder
-app.use(express.static(__dirname));
-
-// 2. SERVE THE MAIN UX
-// This MUST be the first route so users see the website immediately
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// 3. HEALTH CHECK (Optional, but good for Render logs)
+// Step C: Health Check
 app.get('/status', (req, res) => {
-    res.json({ status: 'Live', database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected' });
+    res.json({ 
+        status: 'Live', 
+        database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected' 
+    });
 });
 
-// User registration endpoint
-app.post(
-    '/register', 
-    [
-        body('email', 'Please include a valid email').isEmail(),
-        body('password', 'Password must be 6 or more characters').isLength({ min: 6 }),
-    ],
-    async (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-    try {
-        const { email, password } = req.body;
-
-        let userExists = await User.findOne({ email }); 
-            if (userExists) {
-                return res.status(400).json({ message: 'User already exists' });
-            }
-
-        const salt = await bcrypt.genSalt(8);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const newUser = new User({ email, password: hashedPassword }); 
-            await newUser.save(); 
-            
-            // Generate JWT after successful registration
-            const payload = { user: { id: newUser.id, email: newUser.email } };
-
-            jwt.sign(
-                payload,
-                JWT_SECRET,
-                { expiresIn: 360000 },
-                (err, token) => {
-                    if (err) throw err;
-                    res.status(201).json({ token, message: 'User registered successfully!' });
-                }
-            );
-
-        } catch (err) {
-            console.error(err.message);
-            // Debug: Ensure JSON error response
-            res.status(500).json({ message: 'Server Error during registration.' }); 
-        }
-    }
-);
-
-// User login endpoint (Complete Logic)
-app.post(
-    '/login', 
-    [
-        body('email', 'Email field requires a valid email address.').isEmail(),
-        body('password', 'Password is required').exists(),
-    ],
-    async (req, res) => {
+// Step D: Registration (Keep this as is)
+app.post('/register', [
+    body('email', 'Please include a valid email').isEmail(),
+    body('password', 'Password must be 6 or more characters').isLength({ min: 6 }),
+], async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
