@@ -18,14 +18,16 @@ const sendchamp = require('sendchamp');
 let sendchampClient;
 
 try {
-    // We are removing the 'new' keyword and the '.Sendchamp' part
-    sendchampClient = sendchamp({
+    // Look for the tool in the three most common hiding spots
+    const SendchampTool = sendchamp.Sendchamp || sendchamp.default || sendchamp;
+    
+    sendchampClient = new SendchampTool({
         publicKey: process.env.SENDCHAMP_PUBLIC_KEY,
         stage: 'live'
     });
     console.log("✅ Sendchamp initialized successfully!");
 } catch (err) {
-    console.error("❌ Sendchamp still failing:", err.message);
+    console.error("❌ Sendchamp initialization failed:", err.message);
 }
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
