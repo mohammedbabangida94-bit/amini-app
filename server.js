@@ -85,19 +85,6 @@ mongoose.connect(MONGO_URI || 'mongodb://localhost/temp_db', {
 // Tell Express where your frontend files are
 app.use(express.static(__dirname));
 
-// Serve index.html as the primary entry point
-app.get('/', (req, res) => {
-    const indexPath = path.join(__dirname, 'index.html');
-    console.log("🔍 Attempting to serve UX from:", indexPath);
-    
-    res.sendFile(indexPath, (err) => {
-        if (err) {
-            console.error("❌ UX Error: Cannot find file at", indexPath);
-            res.status(404).send(`<h1>Server is Live</h1><p>But index.html was not found in: ${indexPath}</p>`);
-        }
-    });
-});
-
 // ==========================================
 // 1. USER MODEL (RE-ADD THIS)
 // ==========================================
@@ -192,26 +179,17 @@ app.use(express.static(__dirname));
 
 // Step B: Define the ROOT route ONCE with diagnostic logging
 app.get('/', (req, res) => {
-    // 1. Try Root folder, then try Public folder
-    const rootPath = path.join(__dirname, 'index.html');
-    const publicPath = path.join(__dirname, 'public', 'index.html');
-
-    res.sendFile(rootPath, (err) => {
-        if (err) {
-            // If root fails, try the public folder
-            res.sendFile(publicPath, (err2) => {
-                if (err2) {
-                    console.error("❌ UX Error: Could not find index.html in root or public.");
-                    res.status(404).send(`
-                        <h1>Amini App: UX Not Found</h1>
-                        <p>Server is running, but <b>index.html</b> is missing.</p>
-                        <p>Search path 1: <code>${rootPath}</code></p>
-                        <p>Search path 2: <code>${publicPath}</code></p>
-                    `);
-                }
-            });
-        }
-    });
+    console.log("🎯 ROOT ROUTE HIT!");
+    // This bypasses file searching entirely to test if the route works
+    res.send(`
+        <div style="font-family:sans-serif; padding:20px;">
+            <h1>🎯 Server Route Test</h1>
+            <p>If you see this, the server IS working.</p>
+            <p>Directory: <code>${__dirname}</code></p>
+            <hr>
+            <p>Now check your files: <b>Is index.html in the same folder as server.js?</b></p>
+        </div>
+    `);
 });
 
 // Step C: Health Check
