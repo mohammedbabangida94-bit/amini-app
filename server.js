@@ -239,6 +239,7 @@ app.listen(PORT, () => {
     console.log("📁 Current Directory:", __dirname);
     const fs = require('fs');
     console.log("📄 Files present:", fs.readdirSync(__dirname));
+    console.log("📂 I am looking for index.html in:", __dirname);
 });
 // =================================================================
 // 8. START
