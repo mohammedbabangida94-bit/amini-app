@@ -14,7 +14,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendchamp = require('sendchamp'); 
 
-const sendchampClient = new sendchamp({
+const sendchampClient = sendchamp({
   publicKey: process.env.SENDCHAMP_PUBLIC_KEY,
   stage: 'live' 
 });
