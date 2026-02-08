@@ -15,19 +15,17 @@ const jwt = require('jsonwebtoken');
 
 const sendchamp = require('sendchamp');
 
-// We use 'let' and initialize it inside a try/catch to prevent the whole server from crashing
 let sendchampClient;
 
 try {
-    // If it's a constructor, this works. If it's a function, it still works.
-    const SendchampClass = sendchamp.Sendchamp || sendchamp;
-    sendchampClient = new SendchampClass({
+    // We are removing the 'new' keyword and the '.Sendchamp' part
+    sendchampClient = sendchamp({
         publicKey: process.env.SENDCHAMP_PUBLIC_KEY,
         stage: 'live'
     });
-    console.log("✅ Sendchamp initialized successfully");
+    console.log("✅ Sendchamp initialized successfully!");
 } catch (err) {
-    console.error("❌ Sendchamp failed to initialize, but server will still start:", err.message);
+    console.error("❌ Sendchamp still failing:", err.message);
 }
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
