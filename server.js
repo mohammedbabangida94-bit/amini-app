@@ -13,13 +13,22 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const { Sendchamp } = require('sendchamp'); 
+const sendchamp = require('sendchamp');
 
+// We use 'let' and initialize it inside a try/catch to prevent the whole server from crashing
+let sendchampClient;
 
-const sendchampClient = new Sendchamp({
-  publicKey: process.env.SENDCHAMP_PUBLIC_KEY,
-  stage: 'live'
-});
+try {
+    // If it's a constructor, this works. If it's a function, it still works.
+    const SendchampClass = sendchamp.Sendchamp || sendchamp;
+    sendchampClient = new SendchampClass({
+        publicKey: process.env.SENDCHAMP_PUBLIC_KEY,
+        stage: 'live'
+    });
+    console.log("✅ Sendchamp initialized successfully");
+} catch (err) {
+    console.error("❌ Sendchamp failed to initialize, but server will still start:", err.message);
+}
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
 // =================================================================
