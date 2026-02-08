@@ -107,40 +107,6 @@ const reportSchema = new mongoose.Schema({
 
 const Report = mongoose.model('Report', reportSchema);
 
-//const Report = mongoose.model('report', new mongoose.Schema({
-  //  userEmail: { type: String, required: true },
-    //message: { type: String, required: true },
-    //location: { lat: Number, long: Number },
-    //date: { type: Date, default: Date.now }
-//}));
-
-//app.post('/api/alerts', async (req, res) => {
-  //  try {
-    //    const { latitude, longitude } = req.body;
-        
-        // This saves the SOS to your database forever
-      //  const newAlert = new Alert({
-        //    latitude,
-          //  longitude,
-            // If you have user info in the request, add it here
-        //});
-
-        //await newAlert.save();
-        
-        //console.log("✅ SOS Saved to Database");
-        //res.status(200).json({ message: "Alert saved!" });
-    //} catch (err) {
-      //  res.status(500).json({ error: "Failed to save alert" });
-    //}
-//});
-    
-// =================================================================
-// 3. GLOBAL MIDDLEWARE (Order is critical!)
-// =================================================================
-
-// 3a. Security Headers (FIRST)
-//app.use(helmet());
-
 // 3b. Rate Limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -148,7 +114,7 @@ const limiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
-//app.use(limiter); 
+
 
 // 3c. CORS Configuration (Corrected for your domains)
 //const allowedOrigins = [
@@ -162,16 +128,20 @@ const limiter = rateLimit({
 
 
 
-// =================================================================
-// 3e. STATIC FILES & FRONTEND
-// =================================================================
-
-// Tell Express to serve files (CSS, JS, Images) from the root folder
+// 1. Static files MUST come before routes
 app.use(express.static(__dirname));
 
-// Serve the index.html file when someone visits the main domain
+// 2. The Main UX Route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    const indexPath = path.join(__dirname, 'index.html');
+    
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            console.error("❌ FILE NOT FOUND AT:", indexPath);
+            // This fallback helps us debug without crashing
+            res.status(404).send(`Cannot find index.html. Server looked in: ${__dirname}`);
+        }
+    });
 });
 
 
@@ -312,52 +282,6 @@ app.post(
         }
     }
 );
-
-// ==========================================
-// 7. SOS & LOCATION LOGIC (Frontend)
-// ==========================================
-//const sosButton = document.getElementById('sos-circle');
-//const sosStatus = document.getElementById('sos-status');
-
-//if (sosButton) {
-    //sosButton.addEventListener('click', () => {
-        //sosStatus.textContent = "Detecting location...";
-        
-        //if ("geolocation" in navigator) {
-           // navigator.geolocation.getCurrentPosition(async (position) => {
-               // const lat = position.coords.latitude;
-               // const lon = position.coords.longitude;
-                
-               // try {
-                    // This tells the server to trigger the /api/report logic
-                   // const response = await fetch('/api/report', { 
-                       // method: 'POST',
-                       // headers: { 
-                           // 'Content-Type': 'application/json',
-                           // 'x-auth-token': localStorage.getItem('token') // The key the server expects
-                        //},
-                        //body: JSON.stringify({ 
-                       //     message: "Emergency SOS Triggered!",
-                          //  location: { latitude: lat, longitude: lon }
-                      //  })
-                    //});
-
-                    //const data = await response.json();
-
-                    //if (response.ok) {
-                       // sosStatus.textContent = "SOS SENT! CONTACTS NOTIFIED.";
-                       // sosStatus.style.color = "green";
-                   // } else {
-                    //    sosStatus.textContent = "Error: " + (data.message || "Server error");
-                     //   sosStatus.style.color = "red";
-                   // }
-               // } catch (err) {
-                 //   sosStatus.textContent = "Network Error.";
-              //  }
-           // });
-       // }
-    //});
-//}
 
 // --- 5b. Protected Routes ---
 
