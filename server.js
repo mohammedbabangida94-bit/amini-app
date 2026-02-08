@@ -12,11 +12,13 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const sendchamp = require('sendchamp'); 
 
-const sendchampClient = sendchamp({
+const { Sendchamp } = require('sendchamp'); 
+
+
+const sendchampClient = new Sendchamp({
   publicKey: process.env.SENDCHAMP_PUBLIC_KEY,
-  stage: 'live' 
+  stage: 'live'
 });
 // =================================================================
 // 2. CONFIGURATION & DATABASE CONNECTION
