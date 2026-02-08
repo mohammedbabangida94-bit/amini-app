@@ -1,5 +1,5 @@
 // =================================================================
-// 1. IMPORTS & INITIALIZATION
+// 1. IMPORTS
 // =================================================================
 const dotenv = require('dotenv');
 dotenv.config();
@@ -7,29 +7,34 @@ const mongoose = require('mongoose');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
+// ⚠️ CHANGE THIS: Just use the basic require, do not call any 'new' until we fix the constructor
 const sendchamp = require('sendchamp');
 
+// =================================================================
+// 2. CONFIGURATION
+// =================================================================
 const app = express();
-
-// =================================================================
-// 2. CONFIG & SENDCHAMP
-// =================================================================
 const PORT = process.env.PORT || 10000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key';
 const MONGO_URI = process.env.MONGO_URI;
 
 let sendchampClient;
+
 try {
-    const SendchampTool = sendchamp.Sendchamp || sendchamp.default || sendchamp;
-    sendchampClient = new SendchampTool({
-        publicKey: process.env.SENDCHAMP_PUBLIC_KEY,
-        stage: 'live'
-    });
-    console.log("✅ Sendchamp initialized successfully!");
+    // Check if sendchamp is a function (some versions) or has a constructor
+    if (typeof sendchamp === 'function') {
+        sendchampClient = new sendchamp(process.env.SENDCHAMP_PUBLIC_KEY, 'live');
+    } else if (sendchamp.Sendchamp) {
+        sendchampClient = new sendchamp.Sendchamp(process.env.SENDCHAMP_PUBLIC_KEY, 'live');
+    } else {
+        // Fallback to simple object if it's already an instance
+        sendchampClient = sendchamp; 
+    }
+    console.log("✅ Sendchamp initialized as client (not server)");
 } catch (err) {
     console.error("❌ Sendchamp initialization failed:", err.message);
 }
